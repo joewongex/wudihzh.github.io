@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   
-  <title>蜗牛</title>
+  <title>记一次PHP项目部署过程 | 蜗牛</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="蜗牛的个人博客，分享IT技术、琐事">
-<meta property="og:type" content="website">
-<meta property="og:title" content="蜗牛">
-<meta property="og:url" content="http://wudihzh.info/tags/CodeIgniter/index.html">
+  <meta name="description" content="首先介绍一下项目的基本情况：使用PHP语言开发，数据库用的是MySQL 5.5，HTTP服务器用的是Apache 2.2。早上十点到机房看了看服务器的基本情况：Windows 2000操作系统，没有安装Apache，没有php，幸好已经安装了MySQL数据库，替我省了点事。不过开心得有点太早了，机房老师告诉我她也不知道MySQL的登录密码。没有密码我的项目就没法连接数据库了，基本上等于废了。重装M">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记一次PHP项目部署过程">
+<meta property="og:url" content="http://wudihzh.info/2014/02/07/记一次PHP项目部署过程/index.html">
 <meta property="og:site_name" content="蜗牛">
-<meta property="og:description" content="蜗牛的个人博客，分享IT技术、琐事">
+<meta property="og:description" content="首先介绍一下项目的基本情况：使用PHP语言开发，数据库用的是MySQL 5.5，HTTP服务器用的是Apache 2.2。早上十点到机房看了看服务器的基本情况：Windows 2000操作系统，没有安装Apache，没有php，幸好已经安装了MySQL数据库，替我省了点事。不过开心得有点太早了，机房老师告诉我她也不知道MySQL的登录密码。没有密码我的项目就没法连接数据库了，基本上等于废了。重装M">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="蜗牛">
-<meta name="twitter:description" content="蜗牛的个人博客，分享IT技术、琐事">
+<meta name="twitter:title" content="记一次PHP项目部署过程">
+<meta name="twitter:description" content="首先介绍一下项目的基本情况：使用PHP语言开发，数据库用的是MySQL 5.5，HTTP服务器用的是Apache 2.2。早上十点到机房看了看服务器的基本情况：Windows 2000操作系统，没有安装Apache，没有php，幸好已经安装了MySQL数据库，替我省了点事。不过开心得有点太早了，机房老师告诉我她也不知道MySQL的登录密码。没有密码我的项目就没法连接数据库了，基本上等于废了。重装M">
   
     <link rel="alternative" href="/atom.xml" title="蜗牛" type="application/atom+xml">
   
@@ -62,39 +62,73 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2014" class="archive-year">2014</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2014/12/05/2-2在校验数组数据时空字符串处理的问题/" class="archive-article-date">
-  <time datetime="2014-12-05T12:56:37.000Z" itemprop="datePublished">12月 5</time>
+        <section id="main"><article id="post-记一次PHP项目部署过程" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/02/07/记一次PHP项目部署过程/" class="article-date">
+  <time datetime="2014-02-07T14:09:17.000Z" itemprop="datePublished">2014-02-07</time>
 </a>
-      
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/技术分享/">技术分享</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2014/12/05/2-2在校验数组数据时空字符串处理的问题/">解决CodeIgniter 2.2在校验数组数据时空字符串处理的问题</a>
+    <h1 class="article-title" itemprop="name">
+      记一次PHP项目部署过程
     </h1>
   
 
-    </header>
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>首先介绍一下项目的基本情况：使用PHP语言开发，数据库用的是MySQL 5.5，HTTP服务器用的是Apache 2.2。早上十点到机房看了看服务器的基本情况：Windows 2000操作系统，没有安装Apache，没有php，幸好已经安装了MySQL数据库，替我省了点事。不过开心得有点太早了，机房老师告诉我她也不知道MySQL的登录密码。没有密码我的项目就没法连接数据库了，基本上等于废了。重装MySQL也没用，因为删除MySQL后原来的密码还是会保留在系统中，如果要修改密码，还是需要输入原来的密码。翻了一下以前师兄部署后留下的资料，有一个MySQL的密码，但是是错误的，没办法，只能求助于万能的“谷哥”了。</p>
+<a id="more"></a>
+<p>刚开始搜到的解决办法大多提到MySQL安装目录中bin文件夹里的一个程序mysqld-nt.exe，通过调用这个程序并向它传递“—skip-grant-tables”命令来告诉MySQL跳过登录时的密码验证过程，即不用输入密码也可以登录成功。可是我在我的bin目录中找不到这个mysqld-nt程序啊，奇怪，继续Google，发现原来MySQL从版本5.1开始之后就没有mysqld-nt这个程序了，取而代之的是mysqld.exe，所以这个方法也就行不通了。</p>
+<p>发挥“不到黄河不死心”的精神，继续Google，终于让我找到了一个适合我的MySQL数据库版本的解决方法，这里附上链接：windows环境中mysql忘记root密码的解决办法。基本思路是一样的：都是首先关掉MySQL的服务，然后使用mysqld程序跳过权限安全检查，登录数据库并在mysql库中找到user表，修改user表中root用户的密码，最后重新开启MySQL的服务就可以以新的密码登录了。</p>
+<p>搞定数据库后，将我开发时使用的php5文件夹复制到服务器上，因为开发的时候已经把所需要的扩展打开了，这里就不需要再重复操作了。唯一需要修改的是php.ini配置文件中“extension_dir”配置项，将它指定为php扩展动态链接库文件夹在服务器上的位置就可以了。因为使用到了MySQL数据库，需要将libmysql.dll文件复制到C:/Windows/System32下。</p>
+<p>然后安装Apache服务器，使用的是msi安装程序，简单的一路next就可以了。安装完后，需要对httpd.conf文件进行修改。</p>
+<p><strong>1、加载php模块</strong><br>打开httpd.conf文件，找到“#LoadModule vhost_alias_module modules/mod_vhost_alias.so”，在它的后面添加以下内容：<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">LoadModule php5_module <span class="string">"C:/php/php5apache2_2.dll"</span></span><br><span class="line">AddType application/x-httpd-php <span class="class">.php</span></span><br><span class="line">AddType application/x-httpd-php-source <span class="class">.phps</span></span><br><span class="line">PHPIniDir <span class="string">"C:/php"</span></span><br></pre></td></tr></table></figure></p>
+<p>其中引号内的内容需要修改为php文件夹在服务器上的路径。</p>
+<p><strong>2、修改监听端口</strong><br>因为服务器上安装了Tomcat，它使用了Apache默认的80端口，所以这里要修改Apache的监听端口，否则Apache将无法启动。在httpd.conf文件中找到“Listen 80”，将80端口修改为其他端口。</p>
+<p><strong>3、添加目录首页</strong><br>Apache默认的目录首页只有index.html这一个，但是项目的首页是index.php，在httpd.conf文件中找到“DirectoryIndex ”项，在后面添加“index.php”。</p>
+<p>最后在数据库中导入预先写好的SQL文件，创建好数据库，并将项目复制到Apache的文档根目录中，修改项目配置文件中数据库连接所使用的用户名和密码，启动服务器，在浏览器中输入项目访问地址，一切正常。好，部署成功，收工，吃饭！ (^o^)/</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://wudihzh.info/2014/02/07/记一次PHP项目部署过程/" data-id="ci87eo2ji00078kmm5mik09s7" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
+
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2014/03/08/搭建自己的独立博客/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          搭建自己的独立博客
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+  
 </article>
-  
-  
-    </div></section>
-  
+
 </section>
         
           <aside id="sidebar">
