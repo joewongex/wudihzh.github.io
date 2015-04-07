@@ -64,6 +64,54 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-一个“d”的差别，可怕的内存泄漏" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/04/07/一个“d”的差别，可怕的内存泄漏/" class="article-date">
+  <time datetime="2015-04-07T12:56:37.000Z" itemprop="datePublished">2015-04-07</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/技术分享/">技术分享</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/04/07/一个“d”的差别，可怕的内存泄漏/">一个“d”的差别，可怕的内存泄漏</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="一、php-memcache与php-memcached">一、php-memcache与php-memcached</h3><p>这里所说的“d”的差别，是指php-memcache和php-memcached扩展的差别（注意后者比前者多了一个“d”）。php-memcache和php-memcached都是利用PHP操作Memcached缓存服务器的扩展。不同的是，php-memcache是在原生的PHP框架内开发的，它的出现时间比较早；而php-memcached是基于libmemcached开发的，具有更多的功能，可以说是php-memcache的一个强化。下面分别是php-memcache和php-memcached的API文档，可以看出php-memcached比php-memcache具有更多的操作方法。</p>
+<p><a href="http://php.net/manual/zh/book.memcache.php">http://php.net/manual/zh/book.memcache.php</a><br><a href="http://php.net/manual/zh/book.memcached.php">http://php.net/manual/zh/book.memcached.php</a><br>
+        
+          <p class="article-more-link">
+            <a href="/2015/04/07/一个“d”的差别，可怕的内存泄漏/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://wudihzh.info/2015/04/07/一个“d”的差别，可怕的内存泄漏/" data-id="ci87c2d7s0007t8mmu4984ybd" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Memcached/">Memcached</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-2-2在校验数组数据时空字符串处理的问题" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/04/07/2-2在校验数组数据时空字符串处理的问题/" class="article-date">
@@ -91,20 +139,15 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p>在校验用户提交到服务器的数据时，我们有时会遇到这样的需求：某个字段不是必填的，但是如果用户填写了这个字段，则需要校验这个字段的数据是否满足特定的格式。例如在添加用户信息时，姓名字段并不是必需的，但是如果用户填写了姓名，则要求姓名的长度为2到5个字符。利用CodeIgniter提供的表单验证功能，我们只需要编写如下的规则：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">array</span>(</span><br><span class="line">    <span class="string">'field'</span> =&gt; <span class="string">'real_name'</span>,</span><br><span class="line">    <span class="string">'label'</span> =&gt; <span class="string">'姓名'</span>,</span><br><span class="line">    <span class="string">'rules'</span> =&gt; <span class="string">'trim|min_length[2]|max_length[5]|xss_clean'</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
-<p>但是在实际应用中，却发现这样的规则对数组数据的校验结果与单个值的情况不太一样。例如如果我要提交一组姓名，在表单中我们只要将字段的名称设置为类似“names[]”这样带中括号的格式，PHP就会自动识别为数组数据，针对这些数据我们设置以下的规则：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">array</span>(</span><br><span class="line">    <span class="string">'field'</span> =&gt; <span class="string">'names[]'</span>,</span><br><span class="line">    <span class="string">'label'</span> =&gt; <span class="string">'姓名'</span>,</span><br><span class="line">    <span class="string">'rules'</span> =&gt; <span class="string">'trim|min_length[2]|max_length[5]|xss_clean'</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
-<p>注意field的值也需要写成names[]这样的形式，否则CodeIgniter会找不到该字段对应的数据。这时我们如果什么也不填，直接提交表单的话，会发现数据并不能通过CodeIgniter的校验，返回的信息是这些字段最少需要2个字符。这就奇怪了，我们并没有设置required（必填）规则，也没有填写任何数据，为什么CodeIgniter还是对这些数据进行了校验呢？我们首先来看看CodeIgniter是怎样处理有required和无required的情况的。</p>
-<p>在CI_Form_validation类中执行校验的_execute方法中中有这样一段代码：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If the field is blank, but NOT required, no further tests are necessary</span></span><br><span class="line"><span class="variable">$callback</span> = <span class="keyword">FALSE</span>;</span><br><span class="line"><span class="keyword">if</span> ( ! in_array(<span class="string">'required'</span>, <span class="variable">$rules</span>) <span class="keyword">AND</span> is_null(<span class="variable">$postdata</span>))</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// Before we bail out, does the rule contain a callback?</span></span><br><span class="line">    <span class="keyword">if</span> (preg_match(<span class="string">"/(callback_\w+(\[.*?\])?)/"</span>, implode(<span class="string">' '</span>, <span class="variable">$rules</span>), <span class="variable">$match</span>))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="variable">$callback</span> = <span class="keyword">TRUE</span>;</span><br><span class="line">        <span class="variable">$rules</span> = (<span class="keyword">array</span>(<span class="string">'1'</span> =&gt; <span class="variable">$match</span>[<span class="number">1</span>]));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>注释就已经写得很明白了，如果字段值是空白的（这里从代码看应该是NULL值），并且非必填的（NOT required），那么就不需要做其它的校验了，直接返回。这就奇怪了，当我们校验单一值，如上面的real_name字段，即使我们什么也不填，也不是NULL值啊，应该是空字符串“”啊，为什么也不进行字段长度的校验呢？先不急，我们再看看我们常调用的run方法里的一段代码：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="variable">$row</span>[<span class="string">'is_array'</span>] == <span class="keyword">TRUE</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="variable">$this</span>-&gt;_field_data[<span class="variable">$field</span>][<span class="string">'postdata'</span>] = <span class="variable">$this</span>-&gt;_reduce_array(<span class="variable">$_POST</span>, <span class="variable">$row</span>[<span class="string">'keys'</span>]);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="variable">$field</span>]) <span class="keyword">AND</span> <span class="variable">$_POST</span>[<span class="variable">$field</span>] != <span class="string">""</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="variable">$this</span>-&gt;_field_data[<span class="variable">$field</span>][<span class="string">'postdata'</span>] = <span class="variable">$_POST</span>[<span class="variable">$field</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>上面的代码从$_POST数组中获取用户的数据，可以看到分两种情况，如果字段值存放于数组中，则使用_reduce_array方法获取数组中的元素；然后下面的才是关键：如果数据是单一值，CodeIgniter首先判断字段值是不是空字段串，只有表单中的字段值不是空字符串时，CodeIgniter才会将该值保存到待校验的postdata中。换言之，如果用户提交的是空字符串，则由于CodeIgniter并没有保存该值而使待校验的postdata为NULL。</p>
-<p>既然CodeIgniter要求字段值是NULL并且没有required校验规则时，才不会校验其他的规则，那么是不是CodeIgniter在获取数组类型的参数数据时并没有将空的数据值置为NULL，或者说是直接将空字符串赋给了待校验的postdata呢？带着这样的疑问，我们来看看CodeIgniter获取数组数据的_reduce_array()函数。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="function"><span class="keyword">function</span> <span class="title">_reduce_array</span><span class="params">(<span class="variable">$array</span>, <span class="variable">$keys</span>, <span class="variable">$i</span> = <span class="number">0</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (is_array(<span class="variable">$array</span>))</span><br><span class="line">    &#123;</span><br><span class="line">	<span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable">$keys</span>[<span class="variable">$i</span>]))</span><br><span class="line">	&#123;</span><br><span class="line">	    <span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable">$array</span>[<span class="variable">$keys</span>[<span class="variable">$i</span>]]))</span><br><span class="line">	    &#123;</span><br><span class="line">                <span class="variable">$array</span> = <span class="variable">$this</span>-&gt;_reduce_array(<span class="variable">$array</span>[<span class="variable">$keys</span>[<span class="variable">$i</span>]], <span class="variable">$keys</span>, (<span class="variable">$i</span>+<span class="number">1</span>));</span><br><span class="line">	    &#125;</span><br><span class="line">	    <span class="keyword">else</span></span><br><span class="line">	    &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">NULL</span>;</span><br><span class="line">	    &#125;</span><br><span class="line">    	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	&#123;</span><br><span class="line">	    <span class="keyword">return</span> <span class="variable">$array</span>;</span><br><span class="line">    	&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$array</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>可以看到，这个函数只是在$_POST数组中查找字段的值，找到的话返回字段的数组值，否则返回NULL值。对于数组数据，CodeIgniter并没有像处理单一值的那样对空字符串进行特殊处理，导致文章开头所描述的问题的出现。</p>
-<p>那么怎么解决这个问题呢？我自己采取的是比较简单的方法，在Form_validation类的_execute方法中，CodeIgniter会首先从数组中取出每一个元素，然后对每一个元素的数组执行校验。于是我们可以在这里简单地增加一个判断，如果数据是一个空字符串，则直接将它置为NULL，再传到_execute方法中进行校验，这样就可以使数组数据和单一值具有一致的校验行为了，具体代码如下所示：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// If the $_POST data is an array we will run a recursive call</span></span><br><span class="line"><span class="keyword">if</span> (is_array(<span class="variable">$postdata</span>))</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">foreach</span> (<span class="variable">$postdata</span> <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$val</span>)</span><br><span class="line">    &#123;               </span><br><span class="line">        <span class="variable">$val</span> = <span class="variable">$val</span> === <span class="string">''</span> ? <span class="keyword">null</span> : <span class="variable">$val</span>;  <span class="comment">// 这一行为新增的修改</span></span><br><span class="line">	    <span class="variable">$this</span>-&gt;_execute(<span class="variable">$row</span>, <span class="variable">$rules</span>, <span class="variable">$val</span>, <span class="variable">$cycles</span>);</span><br><span class="line">	    <span class="variable">$cycles</span>++;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>这时可能有人会说：“但是我不想数据库中保存NULL值啊”。这个大可不必担心，因为这里改变的只是需要校验的数据值，当我们通过input对象的post方法获取数据时，仍然是当初的空字符串值。</p>
-
+        
+          <p class="article-more-link">
+            <a href="/2015/04/07/2-2在校验数组数据时空字符串处理的问题/#more">Read More</a>
+          </p>
+        
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2015/04/07/2-2在校验数组数据时空字符串处理的问题/" data-id="ci86kysg20000k0mmgzc1j4s4" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2015/04/07/2-2在校验数组数据时空字符串处理的问题/" data-id="ci87c2d750000t8mmg9xt35pp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CodeIgniter/">CodeIgniter</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -125,7 +168,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/技术分享/">技术分享</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/技术分享/">技术分享</a><span class="category-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -134,7 +177,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeIgniter/">CodeIgniter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PHP/">PHP</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeIgniter/">CodeIgniter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Memcached/">Memcached</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PHP/">PHP</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -143,7 +186,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/CodeIgniter/" style="font-size: NaNpx;">CodeIgniter</a><a href="/tags/PHP/" style="font-size: NaNpx;">PHP</a>
+      <a href="/tags/CodeIgniter/" style="font-size: 10px;">CodeIgniter</a><a href="/tags/Memcached/" style="font-size: 10px;">Memcached</a><a href="/tags/PHP/" style="font-size: 20px;">PHP</a>
     </div>
   </div>
 
@@ -152,7 +195,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">1</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -162,6 +205,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/04/07/一个“d”的差别，可怕的内存泄漏/">一个“d”的差别，可怕的内存泄漏</a>
+          </li>
         
           <li>
             <a href="/2015/04/07/2-2在校验数组数据时空字符串处理的问题/">解决CodeIgniter 2.2在校验数组数据时空字符串处理的问题</a>
