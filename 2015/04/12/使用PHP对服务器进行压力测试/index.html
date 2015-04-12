@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>使用PHP对服务器进行压力测试 | 蜗牛</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="最近基于Workerman在Linux系统上开发了一个手机消息接收系统，主要功能是接收并处理客户端发来的心跳包信息，并且向客户发送设置指令。为了检测系统的稳定性和健壮性，需要对系统进行压力测试。由于本人最熟悉PHP语言，所以决定使用PHP对系统进行压力测试，测试程序需要达到以下目标：
+
+使用PHP语言进行编写
+可以在Windows系统上执行
+使用多个端口，模拟多个客户端同时连接到服务器
+使用非阻塞">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用PHP对服务器进行压力测试">
+<meta property="og:url" content="http://wudihzh.info/2015/04/12/使用PHP对服务器进行压力测试/index.html">
+<meta property="og:site_name" content="蜗牛">
+<meta property="og:description" content="最近基于Workerman在Linux系统上开发了一个手机消息接收系统，主要功能是接收并处理客户端发来的心跳包信息，并且向客户发送设置指令。为了检测系统的稳定性和健壮性，需要对系统进行压力测试。由于本人最熟悉PHP语言，所以决定使用PHP对系统进行压力测试，测试程序需要达到以下目标：
+
+使用PHP语言进行编写
+可以在Windows系统上执行
+使用多个端口，模拟多个客户端同时连接到服务器
+使用非阻塞">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用PHP对服务器进行压力测试">
+<meta name="twitter:description" content="最近基于Workerman在Linux系统上开发了一个手机消息接收系统，主要功能是接收并处理客户端发来的心跳包信息，并且向客户发送设置指令。为了检测系统的稳定性和健壮性，需要对系统进行压力测试。由于本人最熟悉PHP语言，所以决定使用PHP对系统进行压力测试，测试程序需要达到以下目标：
+
+使用PHP语言进行编写
+可以在Windows系统上执行
+使用多个端口，模拟多个客户端同时连接到服务器
+使用非阻塞">
+  
+    <link rel="alternative" href="/atom.xml" title="蜗牛" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+   
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">蜗牛</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">我要一步一步往上爬，在最高点乘着叶片往前飞</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://wudihzh.info"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-使用PHP对服务器进行压力测试" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/04/12/使用PHP对服务器进行压力测试/" class="article-date">
+  <time datetime="2015-04-12T07:43:58.000Z" itemprop="datePublished">2015-04-12</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/技术分享/">技术分享</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      使用PHP对服务器进行压力测试
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近基于<a href="http://www.workerman.net/" target="_blank" rel="external">Workerman</a>在Linux系统上开发了一个手机消息接收系统，主要功能是接收并处理客户端发来的心跳包信息，并且向客户发送设置指令。为了检测系统的稳定性和健壮性，需要对系统进行压力测试。由于本人最熟悉PHP语言，所以决定使用PHP对系统进行压力测试，测试程序需要达到以下目标：</p>
+<ul>
+<li>使用PHP语言进行编写</li>
+<li>可以在Windows系统上执行</li>
+<li>使用多个端口，模拟多个客户端同时连接到服务器</li>
+<li>使用非阻塞的socket</li>
+<li>客户端使用长连接、实现断线重连</li>
+<li>保证测试程序长时间稳定运行</li>
+</ul>
+<a id="more"></a>
+<h2 id="一、在Windows系统上可运行">一、在Windows系统上可运行</h2><p>在Windows系统上编写运行PHP程序很简单，只要在<a href="http://windows.php.net/download/" target="_blank" rel="external">PHP For Windows</a>上下载适合自己操作系统的PHP版本，解压到任意一个目录，然后在系统的环境变量中添加“php.exe”可执行程序的绝对路径，就可以在任意目录中使用“php xxx.php”命令来运行PHP编写的脚本了。</p>
+<p>由于服务器使用socket与客户端进行交流，所以客户端的PHP程序需要开启socket扩展。在Windows系统上，编辑php.ini文件，将下面这一行前面的分号去掉即可。</p>
+<figure class="highlight fix"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">;extension</span>=<span class="string">php_sockets.dll</span></span><br></pre></td></tr></table></figure>
+<p>由于需要模拟多个客户端同时连接到服务器，所以测试程序每一个socket连接需要使用一个独立的端口。在Windows系统中，客户端应用程序默认可开启的端口号为1025到5000，不包括被其他应用程序所占用的端口，最多也就是3975个，这对测试程序来说是远远不够的。为此，我们需要修改Windows系统的注册表项：</p>
+<figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HKEY_LOCAL_MACHINE<span class="command">\SYSTEM</span><span class="command">\CurrentControlSet</span><span class="command">\Services</span><span class="command">\Tcpip</span><span class="command">\Parameters</span></span><br></pre></td></tr></table></figure>
+<p>在此项中新建一个DWORD值，值名为“MaxUserPort”，值的范围为5000到65534，为了测试方便，我们直接使用最大值65534（十进制），然后重启计算机即可生效。</p>
+<h2 id="二、创建多个非阻塞的socket连接">二、创建多个非阻塞的socket连接</h2><p>在PHP中有不少函数可以用来创建socket连接，常用的有”fsockopen”、“pfsocketopen”、“socket_create”、“stream_socket_client”等。可能是出于效率的考虑，经测试发现只有“socket_create”函数可以创建多个使用不同端口的客户端连接，其他函数即使被多次调用，PHP都会给它们分配相同的端口，这对服务器来说其实就只有一个客户端的连接，达不到压力测试的目的。</p>
+<p>另外，由于需要在测试机上模拟多个客户端的连接，如果使用传统的阻塞式socket，即等待某一个连接发送和接收数据完毕后，再轮到下一个连接发送和接收数据，不但测试程序的效率低下，而且也达不到模拟的目的，因为在真实环境中，客户端不可能是一个个轮流来发送和接收数据的。</p>
+<p>因此，需要使用PHP的socket_create函数创建socket连接，并且设置连接为非阻塞的，实现代码如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$socket</span> = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);</span><br><span class="line">socket_connect(<span class="variable">$socket</span>, <span class="variable">$host</span>, <span class="variable">$port</span>); </span><br><span class="line">socket_set_nonblock(<span class="variable">$socket</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="三、使用长连接">三、使用长连接</h2><p>客户端使用长连接，即必须保证测试程序在正常情况不会断开socket连接。一般情况下，测试程序并不会主动断开到服务器的连接，但是服务器出于效率的考虑，会将5分钟内不发送任何数据的客户端程序的连接断开。因此，为了维持长连接，客户端连接必须每隔一段时间向服务器发送一个心跳包，告诉服务器该连接仍然处于活动状态。</p>
+<p>测试程序实现该目标的思路比较简单：为所有客户端定义一个发送心跳包的时间间隔 <em>I</em>，然后在程序启动时记录程序开始运行的时间 <em>S</em>，接着程序会创建所有的socket连接，在创建连接的同时生成该连接发送心跳包的时间，该时间为一个介于 <em>S</em> 和 <em>S + I</em> 的随机值 <em>T</em>。当所有连接都创建完毕后，开始发送心跳包。每个连接发送心跳包之前，首先检查自己的 <em>T + I</em> 是否小于等于当前时间，如果是则发送心跳包，并且修改 <em>T</em> 为当前时间；如果不是则继续等待。该思路的实现代码如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">send</span><span class="params">()</span> </span>&#123;        </span><br><span class="line">    <span class="variable">$now</span> = time();            </span><br><span class="line">    <span class="keyword">if</span> ((<span class="variable">$now</span> - <span class="variable">$this</span>-&gt;lastSendTime) &gt; <span class="keyword">self</span>::<span class="variable">$sendInterval</span>) &#123;</span><br><span class="line">        socket_write(<span class="variable">$this</span>-&gt;socket, <span class="variable">$this</span>-&gt;message);</span><br><span class="line">        <span class="variable">$this</span>-&gt;lastSendTime = time();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="四、保证测试程序长时间稳定运行">四、保证测试程序长时间稳定运行</h2><p>在使用传统的阻塞式socket时，基本的套路是使用socket连接发送一个数据，然后阻塞等待服务器响应，收到服务器的响应后，从连接中读取返回的数据，如果数据有用则继续处理，没用的话就直接丢弃。这样的模式工作得很好，也没有什么问题。但是一但转到非阻塞式的socket，情况就有点不一样了。在非阻塞式的socket中，你不用等待服务器的响应，就可以让下一个连接继续发送数据了。因此，在非阻塞式的socket中，发送和接收数据是分开的，你可以先把所有的数据一并发送到服务器，之后后再统一接收服务返回的信息。</p>
+<p>由于在测试中服务器的回复数据对我没有什么用处，于是我在这里就犯了一个低级错误，没有接收服务器返回的数据（不是没有处理，而是根本就没有写接收数据的代码）。这样测试程序长时间运行时，系统的已使用内存会不断上升，到达某一个点时，所有已建立的测试连接会被强迫断开，所有基于TCP协议的应用程序（如QQ、Navicat、Secure CRT）的连接也会被断开。奇怪的是，如果这时你打开资源管理器，查看测试程序的内存占用，会发现只有几KB的使用量，而且内存占用一直很稳定，这说明程序并没有发生内存泄漏。那究竟是什么原因呢？经过GG发现，如果不接收服务器发送过来的数据，数据会一直堆积在操作系统的接收缓冲区中，导致内存占用不断上升，最终耗尽系统的资源。</p>
+<p>那么在非阻塞的socket中，如何一并接收所有连接的数据呢？关键是使用<a href="http://php.net/manual/zh/function.socket-select.php" target="_blank" rel="external">socket_select()</a>这个函数，先来看看这个函数的原型：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int socket_select ( <span class="keyword">array</span> &amp;<span class="variable">$read</span> , <span class="keyword">array</span> &amp;<span class="variable">$write</span> , <span class="keyword">array</span> &amp;<span class="variable">$except</span> , int <span class="variable">$tv_sec</span> [, int <span class="variable">$tv_usec</span> = <span class="number">0</span> ] )</span><br></pre></td></tr></table></figure>
+<p>函数有五个参数，其中前四个参数是必须的。read数组储存需要从中读取数据的连接，PHP会监视这些连接，看它们之中是否有可读的数据，如果连接有数据可读，则把它筛选出来。write和except数组类似，write数组储存需要写入数据的连接，except数组储存有可能抛出异常的连接。第四个参数tv_sec和第五个参数tv_usec加起来表示socket_select函数的超时时间，即表示函数监视连接的最长时间，超过这个时间函数就返回。当然，如果所有连接都可操作了，函数会马上返回，而不必等到超时时间到。如果你想函数必须等到所有连接都可操作了才返回，可以把参数tv_sec设置为NULL或0。</p>
+<p>需要注意的是，前三个参数使用的是引用传递，即函数会修改传进行的变量。以read数组为例，当函数返回后，read中储存的就变成了有可读数据的连接了。这时只需要循环遍历read数组，就可以批量读取服务器的返回信息了。</p>
+<p>还有一点需要注意的是，当服务器断开连接时，连接会收到EOF（end-of-file），这时从连接中读取数据时，得到的是一个空字符串（””）。当我们发现这种情况后，需要重新建立这个socket到服务器的连接。</p>
+<p>测试程序中实现该目标的代码如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">read</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="variable">$w</span> = <span class="variable">$e</span> = <span class="keyword">array</span>();</span><br><span class="line">    <span class="variable">$tryTimes</span> = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// sendSockets表示已经发送了心跳包的连接</span></span><br><span class="line">    <span class="keyword">while</span> (<span class="variable">$this</span>-&gt;sendSockets) &#123;</span><br><span class="line">        <span class="variable">$read</span> = <span class="variable">$this</span>-&gt;sendSockets;</span><br><span class="line">        socket_select(<span class="variable">$read</span>, <span class="variable">$w</span>, <span class="variable">$e</span>, <span class="number">5</span>);</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$read</span>) &#123;</span><br><span class="line">            <span class="keyword">foreach</span> (<span class="variable">$read</span> <span class="keyword">as</span> <span class="variable">$r</span>) &#123;</span><br><span class="line">                <span class="variable">$index</span> = array_search(<span class="variable">$r</span>, <span class="variable">$this</span>-&gt;sendSockets);</span><br><span class="line">                <span class="variable">$result</span> = socket_read(<span class="variable">$r</span>, <span class="number">1000</span>);</span><br><span class="line">                <span class="keyword">if</span> (strlen(<span class="variable">$result</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">                    socket_close(<span class="variable">$r</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 获取到数据后，将连接中检查数组中剔除</span></span><br><span class="line">                <span class="keyword">unset</span>(<span class="variable">$this</span>-&gt;sendSockets[<span class="variable">$index</span>]);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="variable">$readCount</span> += count(<span class="variable">$read</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="variable">$tryTimes</span> ++;</span><br><span class="line">        <span class="comment">// 检查3次，如果仍然没有可读的数据，则退出循环</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$tryTimes</span> &gt; <span class="number">3</span>) &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="五、封装与整合">五、封装与整合</h2><p>为了使测试程序的代码看起来更加清晰和有条理，将代码稍微封装了一下。将socket连接、发送心跳包的时间、发送的心跳包数据格式封装成一个Client类。另外定义了一个ClientController类，负责创建多个Client对象，指挥Client对象发送和接收消息。</p>
+<p>同时，为了方便测试使用，程序可以从命令行中读取用户参数，修改测试程序的设置。PHP将命令行的参数保存在argv数组中，不过需要注意的是，与其他语言稍有不同，argv数组的第一个元素是PHP执行的文件的文件名，之后才是按顺序储存的用户参数。例如执行命令“php test.php a b”，那么argv数组中储存的依次是“test.php”、“a”、“b”这三个元素。</p>
+<p>最后，整合后的测试程序的代码如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Client</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="variable">$host</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="variable">$port</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="variable">$startTime</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="variable">$sendInterval</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="variable">$globalId</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$lastSendTime</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$socket</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$id</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$IMEI</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$message</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="variable">$this</span>-&gt;lastSendTime = mt_rand(<span class="keyword">self</span>::<span class="variable">$startTime</span>, <span class="keyword">self</span>::<span class="variable">$startTime</span> + <span class="number">60</span>);</span><br><span class="line">        <span class="variable">$this</span>-&gt;id = <span class="keyword">self</span>::<span class="variable">$globalId</span> ++;      </span><br><span class="line">        <span class="variable">$this</span>-&gt;IMEI = str_pad(<span class="variable">$this</span>-&gt;id, <span class="number">15</span>, <span class="string">'0'</span>, STR_PAD_LEFT);</span><br><span class="line">        <span class="comment">// 你自己定义的心跳包数据格式</span></span><br><span class="line">        <span class="variable">$this</span>-&gt;message = <span class="string">"XXXX"</span>;</span><br><span class="line">        <span class="variable">$this</span>-&gt;connect();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">send</span><span class="params">()</span> </span>&#123;        </span><br><span class="line">        <span class="keyword">if</span> (is_resource(<span class="variable">$this</span>-&gt;socket)) &#123;</span><br><span class="line">            <span class="variable">$now</span> = time();            </span><br><span class="line">            <span class="keyword">if</span> ((<span class="variable">$now</span> - <span class="variable">$this</span>-&gt;lastSendTime) &gt; <span class="keyword">self</span>::<span class="variable">$sendInterval</span>) &#123;                </span><br><span class="line">                socket_write(<span class="variable">$this</span>-&gt;socket, <span class="variable">$this</span>-&gt;message);</span><br><span class="line">                <span class="variable">$this</span>-&gt;lastSendTime = time();</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">TRUE</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">echo</span> <span class="string">'Client '</span> . <span class="variable">$this</span>-&gt;id . <span class="string">' connect again..'</span> . PHP_EOL;</span><br><span class="line">            <span class="variable">$this</span>-&gt;connect();</span><br><span class="line">            <span class="variable">$this</span>-&gt;send(<span class="variable">$this</span>-&gt;message);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">FALSE</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">close</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">'Clinet '</span> . <span class="variable">$this</span>-&gt;id . <span class="string">' closed...'</span> . PHP_EOL;</span><br><span class="line">        socket_close(<span class="variable">$this</span>-&gt;socket);</span><br><span class="line">        <span class="variable">$this</span>-&gt;socket = <span class="keyword">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__get</span><span class="params">(<span class="variable">$property</span>)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (property_exists(<span class="variable">$this</span>, <span class="variable">$property</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="variable">$this</span>-&gt;<span class="variable">$property</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">connect</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="variable">$this</span>-&gt;socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);</span><br><span class="line">        <span class="keyword">if</span> (is_resource(<span class="variable">$this</span>-&gt;socket)) &#123;</span><br><span class="line">            <span class="comment">//socket_set_timeout($this-&gt;socket, 2);</span></span><br><span class="line">            <span class="keyword">if</span> (socket_connect(<span class="variable">$this</span>-&gt;socket, <span class="keyword">self</span>::<span class="variable">$host</span>, <span class="keyword">self</span>::<span class="variable">$port</span>) &amp;&amp; socket_set_nonblock(<span class="variable">$this</span>-&gt;socket)) &#123;</span><br><span class="line">                <span class="keyword">echo</span> <span class="string">"Client &#123;$this-&gt;id&#125; connect successfully.."</span> . PHP_EOL;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="variable">$this</span>-&gt;close();</span><br><span class="line">                <span class="variable">$this</span>-&gt;connect();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ClietsController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$clients</span> = <span class="keyword">array</span>();</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$sendSockets</span> = <span class="keyword">array</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">(<span class="variable">$clients</span>)</span> </span>&#123;</span><br><span class="line">        Client::<span class="variable">$startTime</span> = time();</span><br><span class="line">        <span class="comment">// 服务器的端口，也可以改成从命令行中指定</span></span><br><span class="line">        Client::<span class="variable">$port</span> = <span class="number">1234</span>;</span><br><span class="line">        Client::<span class="variable">$sendInterval</span> = <span class="number">60</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="variable">$i</span> = <span class="number">0</span>; <span class="variable">$i</span> &lt; <span class="variable">$clients</span>; <span class="variable">$i</span>++) &#123;</span><br><span class="line">            array_push(<span class="variable">$this</span>-&gt;clients, <span class="keyword">new</span> Client());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">send</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//$this-&gt;sendSockets = array();</span></span><br><span class="line">        <span class="keyword">foreach</span> (<span class="variable">$this</span>-&gt;clients <span class="keyword">as</span> <span class="variable">$client</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="variable">$client</span>-&gt;send()) &#123;</span><br><span class="line">                array_push(<span class="variable">$this</span>-&gt;sendSockets, <span class="variable">$client</span>-&gt;socket);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$this</span>-&gt;sendSockets) &#123;</span><br><span class="line">            <span class="keyword">echo</span> count(<span class="variable">$this</span>-&gt;sendSockets) . <span class="string">' Clients send'</span> . PHP_EOL;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">TRUE</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">FALSE</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">read</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="variable">$w</span> = <span class="variable">$e</span> = <span class="keyword">array</span>();</span><br><span class="line">        <span class="variable">$readCount</span> = <span class="number">0</span>;</span><br><span class="line">        <span class="variable">$tryTimes</span> = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (<span class="variable">$this</span>-&gt;sendSockets) &#123;</span><br><span class="line">            <span class="variable">$read</span> = <span class="variable">$this</span>-&gt;sendSockets;</span><br><span class="line">            socket_select(<span class="variable">$read</span>, <span class="variable">$w</span>, <span class="variable">$e</span>, <span class="number">5</span>);</span><br><span class="line">            <span class="keyword">if</span> (<span class="variable">$read</span>) &#123;</span><br><span class="line">                <span class="keyword">foreach</span> (<span class="variable">$read</span> <span class="keyword">as</span> <span class="variable">$r</span>) &#123;</span><br><span class="line">                    <span class="variable">$index</span> = array_search(<span class="variable">$r</span>, <span class="variable">$this</span>-&gt;sendSockets);</span><br><span class="line">                    <span class="variable">$result</span> = socket_read(<span class="variable">$r</span>, <span class="number">1000</span>);</span><br><span class="line">                    <span class="keyword">if</span> (strlen(<span class="variable">$result</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">                        socket_close(<span class="variable">$r</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">unset</span>(<span class="variable">$this</span>-&gt;sendSockets[<span class="variable">$index</span>]);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="variable">$readCount</span> += count(<span class="variable">$read</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="variable">$tryTimes</span> ++;</span><br><span class="line">            <span class="keyword">if</span> (<span class="variable">$tryTimes</span> &gt; <span class="number">3</span>) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">echo</span> <span class="variable">$readCount</span> . <span class="string">' Clients read'</span> . PHP_EOL . PHP_EOL;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (count(<span class="variable">$argv</span>) &lt; <span class="number">4</span>) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">'4 parameters are required.'</span> . PHP_EOL);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$clients</span> = (int) <span class="variable">$argv</span>[<span class="number">1</span>] &gt; <span class="number">0</span> ? (int) <span class="variable">$argv</span>[<span class="number">1</span>] : <span class="number">100</span>;</span><br><span class="line"><span class="variable">$globalId</span> = (int) <span class="variable">$argv</span>[<span class="number">2</span>] &gt; <span class="number">0</span> ? (int) <span class="variable">$argv</span>[<span class="number">2</span>] : <span class="number">1</span>;</span><br><span class="line"><span class="variable">$host</span> = <span class="variable">$argv</span>[<span class="number">3</span>];</span><br><span class="line">Client::<span class="variable">$globalId</span> = <span class="variable">$globalId</span>;</span><br><span class="line">Client::<span class="variable">$host</span> = <span class="variable">$host</span>;</span><br><span class="line"></span><br><span class="line"><span class="variable">$controller</span> = <span class="keyword">new</span> ClietsController(<span class="variable">$clients</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$controller</span>-&gt;send()) &#123;</span><br><span class="line">        sleep(<span class="number">2</span>);</span><br><span class="line">        <span class="variable">$controller</span>-&gt;read();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://wudihzh.info/2015/04/12/使用PHP对服务器进行压力测试/" data-id="ci8e5chqp0007psmm2lueak7j" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/socket/">socket</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/压力测试/">压力测试</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/非阻塞/">非阻塞</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2015/03/02/一个“d”的差别，可怕的内存泄漏/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">一个“d”的差别，可怕的内存泄漏</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/总结/">总结</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术分享/">技术分享</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/转载/">转载</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSS/">CSS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeIgniter/">CodeIgniter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Memcached/">Memcached</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PHP/">PHP</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PySide/">PySide</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SSH/">SSH</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/博客/">博客</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/压力测试/">压力测试</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名/">域名</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/学习资料/">学习资料</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/教程/">教程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/正能量/">正能量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/空间/">空间</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/非阻塞/">非阻塞</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/CSS/" style="font-size: 10px;">CSS</a><a href="/tags/CodeIgniter/" style="font-size: 10px;">CodeIgniter</a><a href="/tags/Git/" style="font-size: 15px;">Git</a><a href="/tags/Memcached/" style="font-size: 10px;">Memcached</a><a href="/tags/PHP/" style="font-size: 20px;">PHP</a><a href="/tags/PySide/" style="font-size: 10px;">PySide</a><a href="/tags/Python/" style="font-size: 10px;">Python</a><a href="/tags/SSH/" style="font-size: 10px;">SSH</a><a href="/tags/socket/" style="font-size: 10px;">socket</a><a href="/tags/博客/" style="font-size: 10px;">博客</a><a href="/tags/压力测试/" style="font-size: 10px;">压力测试</a><a href="/tags/域名/" style="font-size: 10px;">域名</a><a href="/tags/学习资料/" style="font-size: 10px;">学习资料</a><a href="/tags/教程/" style="font-size: 15px;">教程</a><a href="/tags/正能量/" style="font-size: 10px;">正能量</a><a href="/tags/空间/" style="font-size: 10px;">空间</a><a href="/tags/非阻塞/" style="font-size: 10px;">非阻塞</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">三月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/07/">七月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">六月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/05/">五月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/03/">三月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/04/12/使用PHP对服务器进行压力测试/">使用PHP对服务器进行压力测试</a>
+          </li>
+        
+          <li>
+            <a href="/2015/03/02/一个“d”的差别，可怕的内存泄漏/">一个“d”的差别，可怕的内存泄漏</a>
+          </li>
+        
+          <li>
+            <a href="/2014/12/05/2-2在校验数组数据时空字符串处理的问题/">解决CodeIgniter 2.2在校验数组数据时空字符串处理的问题</a>
+          </li>
+        
+          <li>
+            <a href="/2014/11/23/快乐地与内心交谈——摘自《正能量》/">快乐地与内心交谈——摘自《正能量》</a>
+          </li>
+        
+          <li>
+            <a href="/2014/07/12/精通CSS：入门基础/">精通CSS：入门基础</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Huang Zhuohui<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="http://apps.bdimg.com/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>
