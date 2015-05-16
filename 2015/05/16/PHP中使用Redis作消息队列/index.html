@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>PHP中使用Redis作消息队列 | 蜗牛</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="消息队列一般应用在需要进行耗时操作的系统上，例如用户注册成功后，需要给用户的邮箱发一封确认邮件。发送邮件是一个相对耗时的操作，因此，我们常常将需要接收邮件的用户信息放入到内存中的一个待发送邮件队列中，然后由一个后台进程从队列中取出这些用户信息并给他们发送邮件。这也就是典型的生产者——消费者模式。
+可用作内存消息队列的缓存系统有不少，之所以选用Redis，是因为它本身就支持直接在内存中缓存链表结构的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP中使用Redis作消息队列">
+<meta property="og:url" content="http://wudihzh.info/2015/05/16/PHP中使用Redis作消息队列/index.html">
+<meta property="og:site_name" content="蜗牛">
+<meta property="og:description" content="消息队列一般应用在需要进行耗时操作的系统上，例如用户注册成功后，需要给用户的邮箱发一封确认邮件。发送邮件是一个相对耗时的操作，因此，我们常常将需要接收邮件的用户信息放入到内存中的一个待发送邮件队列中，然后由一个后台进程从队列中取出这些用户信息并给他们发送邮件。这也就是典型的生产者——消费者模式。
+可用作内存消息队列的缓存系统有不少，之所以选用Redis，是因为它本身就支持直接在内存中缓存链表结构的">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PHP中使用Redis作消息队列">
+<meta name="twitter:description" content="消息队列一般应用在需要进行耗时操作的系统上，例如用户注册成功后，需要给用户的邮箱发一封确认邮件。发送邮件是一个相对耗时的操作，因此，我们常常将需要接收邮件的用户信息放入到内存中的一个待发送邮件队列中，然后由一个后台进程从队列中取出这些用户信息并给他们发送邮件。这也就是典型的生产者——消费者模式。
+可用作内存消息队列的缓存系统有不少，之所以选用Redis，是因为它本身就支持直接在内存中缓存链表结构的">
+  
+    <link rel="alternative" href="/atom.xml" title="蜗牛" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+   
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">蜗牛</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">我要一步一步往上爬，在最高点乘着叶片往前飞</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://wudihzh.info"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-PHP中使用Redis作消息队列" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/05/16/PHP中使用Redis作消息队列/" class="article-date">
+  <time datetime="2015-05-16T07:43:18.000Z" itemprop="datePublished">2015-05-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/技术分享/">技术分享</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      PHP中使用Redis作消息队列
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>消息队列一般应用在需要进行耗时操作的系统上，例如用户注册成功后，需要给用户的邮箱发一封确认邮件。发送邮件是一个相对耗时的操作，因此，我们常常将需要接收邮件的用户信息放入到内存中的一个待发送邮件队列中，然后由一个后台进程从队列中取出这些用户信息并给他们发送邮件。这也就是典型的生产者——消费者模式。</p>
+<p>可用作内存消息队列的缓存系统有不少，之所以选用Redis，是因为它本身就支持直接在内存中缓存链表结构的数据，通过对链表执行lPush、rPop操作，就可以模拟队列的FIFO操作了。</p>
+<a id="more"></a>
+<h2 id="一、安装、配置Redis">一、安装、配置Redis</h2><h3 id="1-_安装Redis">1. 安装Redis</h3><p>安装Redis比较简单，只要在官网下载最新版本（目前是3.0.1）的源码包，使用“make”和“make install命令安装即可”。下面直接给出命令操作：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mkdir /usr/<span class="built_in">local</span>/redis</span><br><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/redis</span><br><span class="line">wget http://download.redis.io/releases/redis-<span class="number">3.0</span>.<span class="number">1</span>.tar.gz</span><br><span class="line">tar zxvf redis-<span class="number">3.0</span>.<span class="number">1</span>.tar.gz</span><br><span class="line"><span class="built_in">cd</span> redis-<span class="number">3.0</span>.<span class="number">1</span></span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure></p>
+<h3 id="2-_配置Redis为后台服务">2. 配置Redis为后台服务</h3><p>Redis安装完成后，默认是以前台任务方式运行的。你可以输入“redis-server”命令试试看，这时Redis启动，占据你的终端，然后你什么也做不了了，除非以“ctrl-c”指令结束Redis，或者多开一个终端。既然要以Redis做消息队列，当然希望Redis以后台服务的形式随操作系统一起启动。那么如何实现呢，首先先来简单地看一下Linux后台服务的运行原理。</p>
+<p>当我们在终端输入”service xxx start”后，Linux就会在“/etc/init.d/”目录下寻找“xxx”脚本，并执行脚本中“start”部分的代码。以我们常用的mysqld服务为例，在“/etc/init.d”有一个“mysqld”脚本，其中有这样一段代码：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># See how we were called.</span></span><br><span class="line"><span class="keyword">case</span> <span class="string">"<span class="variable">$1</span>"</span> <span class="keyword">in</span></span><br><span class="line">  start)</span><br><span class="line">    start</span><br><span class="line">    ;;</span><br><span class="line">  stop)</span><br><span class="line">    stop</span><br><span class="line">    ;;</span><br><span class="line">  status)</span><br><span class="line">    status -p <span class="string">"<span class="variable">$mypidfile</span>"</span> <span class="variable">$prog</span></span><br><span class="line">    ;;</span><br><span class="line">  restart)</span><br><span class="line">    restart</span><br><span class="line">    ;;</span><br><span class="line">  condrestart|try-restart)</span><br><span class="line">    condrestart</span><br><span class="line">    ;;</span><br><span class="line">  reload)</span><br><span class="line">    <span class="built_in">exit</span> <span class="number">3</span></span><br><span class="line">    ;;</span><br><span class="line">  force-reload)</span><br><span class="line">    restart</span><br><span class="line">    ;;</span><br><span class="line">  *)</span><br><span class="line">    <span class="built_in">echo</span> $<span class="string">"Usage: <span class="variable">$0</span> &#123;start|stop|status|restart|condrestart|try-restart|reload|force-reload&#125;"</span></span><br><span class="line">    <span class="built_in">exit</span> <span class="number">2</span></span><br><span class="line"><span class="keyword">esac</span></span><br></pre></td></tr></table></figure></p>
+<p>代码中“$1”指的是我们在服务名称后面输入的指令。可以看到，在“mysqld”后面合法的指令有“start”、“stop”、“status”、“restart”、“condrestart”、“try-restart”、“reload”和“force-reload”。当“mysqld”脚本接收到用户的指令后，就会执行指令后对应的函数，有兴趣的朋友可以自行打开脚本文件，查看每个函数的定义，对于了解mysql的运行机制非常有帮助。</p>
+<p>Redis也为我们准备了这样一个脚本，在安装目录里的“utils”文件夹中，脚本文件名是“redis_init_script”。我们可以把这个脚本复制到“/etc/init.id/”目录下，并且重命为“redisd”（后台服务名一般以“d”结尾）。打开这个脚本文件看看里面的内容：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Simple Redis init.d script conceived to work on Linux systems</span></span><br><span class="line"><span class="comment"># as it does use of the /proc filesystem.</span></span><br><span class="line"></span><br><span class="line">REDISPORT=<span class="number">6379</span></span><br><span class="line">EXEC=/usr/<span class="built_in">local</span>/bin/redis-server</span><br><span class="line">CLIEXEC=/usr/<span class="built_in">local</span>/bin/redis-cli</span><br><span class="line"></span><br><span class="line">PIDFILE=/var/run/redis_<span class="variable">$&#123;REDISPORT&#125;</span>.pid</span><br><span class="line">CONF=<span class="string">"/etc/redis/<span class="variable">$&#123;REDISPORT&#125;</span>.conf"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">case</span> <span class="string">"<span class="variable">$1</span>"</span> <span class="keyword">in</span></span><br><span class="line">    start)</span><br><span class="line">        <span class="keyword">if</span> [ <span class="operator">-f</span> <span class="variable">$PIDFILE</span> ]</span><br><span class="line">        <span class="keyword">then</span></span><br><span class="line">                <span class="built_in">echo</span> <span class="string">"<span class="variable">$PIDFILE</span> exists, process is already running or crashed"</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">                <span class="built_in">echo</span> <span class="string">"Starting Redis server..."</span></span><br><span class="line">                <span class="variable">$EXEC</span> <span class="variable">$CONF</span></span><br><span class="line">        <span class="keyword">fi</span></span><br><span class="line">        ;;</span><br><span class="line">    stop)</span><br><span class="line">        <span class="keyword">if</span> [ ! <span class="operator">-f</span> <span class="variable">$PIDFILE</span> ]</span><br><span class="line">        <span class="keyword">then</span></span><br><span class="line">                <span class="built_in">echo</span> <span class="string">"<span class="variable">$PIDFILE</span> does not exist, process is not running"</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">                PID=$(cat <span class="variable">$PIDFILE</span>)</span><br><span class="line">                <span class="built_in">echo</span> <span class="string">"Stopping ..."</span></span><br><span class="line">                <span class="variable">$CLIEXEC</span> -p <span class="variable">$REDISPORT</span> shutdown</span><br><span class="line">                <span class="keyword">while</span> [ -x /proc/<span class="variable">$&#123;PID&#125;</span> ]</span><br><span class="line">                <span class="keyword">do</span></span><br><span class="line">                    <span class="built_in">echo</span> <span class="string">"Waiting for Redis to shutdown ..."</span></span><br><span class="line">                    sleep <span class="number">1</span></span><br><span class="line">                <span class="keyword">done</span></span><br><span class="line">                <span class="built_in">echo</span> <span class="string">"Redis stopped"</span></span><br><span class="line">        <span class="keyword">fi</span></span><br><span class="line">        ;;</span><br><span class="line">    *)</span><br><span class="line">        <span class="built_in">echo</span> <span class="string">"Please use start or stop as first argument"</span></span><br><span class="line">        ;;</span><br><span class="line"><span class="keyword">esac</span></span><br></pre></td></tr></table></figure></p>
+<p>这个脚本相比“mysqld”就简单多了，即使你不懂shell编程，大概也能看懂它的意思。我们首先来看脚本刚开始时定义的几个变量：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">REDISPORT=<span class="number">6379</span></span><br><span class="line">EXEC=/usr/<span class="built_in">local</span>/bin/redis-server</span><br><span class="line">CLIEXEC=/usr/<span class="built_in">local</span>/bin/redis-cli</span><br><span class="line"></span><br><span class="line">PIDFILE=/var/run/redis_<span class="variable">$&#123;REDISPORT&#125;</span>.pid</span><br><span class="line">CONF=<span class="string">"/etc/redis/<span class="variable">$&#123;REDISPORT&#125;</span>.conf"</span></span><br></pre></td></tr></table></figure></p>
+<p>“REDISPORT”是Redis启动时监听的端口；“EXEC”是启动Redis服务端的指令；“CLIEXEC”是启动Redis客户端的指令；“PIDFILE”是Redis启动时创建的PID文件，默认情况下，Reids启动时会在“/var/run/”目录下创建一个“.pid”文件；“CONF”是Redis服务端启动时所使用的配置文件。这几个变量在后面修改Redis的配置文件时也需要用到。</p>
+<p>对于“redisd”服务来说，默认可执行的指令有两个“start”和“stop”。当使用“start”指令时，脚本首先会检查PID文件是否存在，如果已经存在，说明Redis服务已经运行，直接退出；否则以“CONF”变量指定的配置文件启动Redis的服务端。当使用“stop”指令时，脚本首先会检查PID文件是否存在，如果不存在，说明Reids服务没有在运行，直接退出；否则调用Redis的客户端关闭服务端，然后阻塞等待PID文件被删除，PID被删除后，说明服务端被关闭，脚本退出。</p>
+<p>从“redisd”脚本中我们知道，Redis服务端在启动时，需要一个配置文件，配置文件默认为“/etc/redis/6379.conf”。在Redis的安装目录下，有一个配置文件的模板“redis.conf”，我们可以把这个文件复制到“/etc/redis/”下，并且重命名为“为6379.conf”。然后根据我们的需要进行修改。</p>
+<p>为了使Redis以后台服务的方式自动运行，需要修改配置文件中的两个参数值。第一个是“daemonize”，需要修改为“yes”，Reids才会以后台任务的方式运行：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># By default Redis does not run as a daemon. Use 'yes' if you need it.</span></span><br><span class="line"><span class="comment"># Note that Redis will write a pid file in /var/run/redis.pid when daemonized.</span></span><br><span class="line">daemonize yes</span><br></pre></td></tr></table></figure></p>
+<p>第二个是“pidfile”，还记得“redisd”脚本中定义的PID文件的文件名吗？在“redisd”脚本中，这个值是“/var/run/redis_${REDISPORT}.pid”，是带端口的，而在配置文件中，这个值默认是“/var/run/redis.pid”，是不带端口的。如果不将这两个修改为一致的，就会导致“redisd”判断Redis服务端的状态不正确，从而不能正确地启动和停止服务。因此，我们将这个值修改为：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># When running daemonized, Redis writes a pid file in /var/run/redis.pid by</span></span><br><span class="line"><span class="comment"># default. You can specify a custom pid file location here.</span></span><br><span class="line">pidfile /var/run/redis_6379.pid</span><br></pre></td></tr></table></figure></p>
+<p>做完以上工作后，我们就可以使用“service redisd start”命令和”service redisd stop”命令来启动和停止Redis的服务端了。</p>
+<h3 id="3-_使Redis随系统一起启动">3. 使Redis随系统一起启动</h3><p>我们知道，要使一项后台服务随系统一起启动，只需要使用一条指令“chkconfig 服务名称 on”即可，但是当使用该指令来使Redis随系统一起启动时，会收到这样的错误提示：<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service redisd does not support chkconfig</span><br></pre></td></tr></table></figure></p>
+<p>这时，我们只需要在“redisd”脚本文件上面的注释中加入下面的两行注释即可：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># chkconfig:   2345 90 10</span></span><br><span class="line"><span class="comment"># description:  Redis is a persistent key-value database</span></span><br></pre></td></tr></table></figure></p>
+<p>上面注释的意思是，Redis服务必须在系统运行级2、3、4、5下被启动或关闭，启动的优先级是90，关闭的优先级是10。</p>
+<p>之后，我们就可以将Redis服务设置成开机启动了：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chkconfig redisd on</span><br></pre></td></tr></table></figure></p>
+<h2 id="二、安装phpredis扩展">二、安装phpredis扩展</h2><p>要在PHP中使用Redis提供的功能，需要另外安装扩展，这里推荐使用<a href="https://github.com/phpredis/phpredis" target="_blank" rel="external">phpredis</a>，在PECL上面也有该扩展，我们使用PECL的方式来安装。安装phpredis与安装其他PECL的扩展方法一样，这里只列出所需的命令：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mkdir /usr/<span class="built_in">local</span>/phpredis</span><br><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/phpredis</span><br><span class="line">wget https://pecl.php.net/get/redis-<span class="number">2.2</span>.<span class="number">7</span>.tgz</span><br><span class="line">tar zxvf redis-<span class="number">2.2</span>.<span class="number">7</span>.tgz</span><br><span class="line"><span class="built_in">cd</span> redis-<span class="number">2.2</span>.<span class="number">7</span></span><br><span class="line">phpize</span><br><span class="line">./configure</span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure></p>
+<p>安装成功后，应该有这样一句提示<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Installing shared extensions:     /usr/lib/php/modules/</span><br></pre></td></tr></table></figure></p>
+<p>说明扩展已经自动添加到PHP的默认扩展目录了，最后执行下面的命令，使PHP自动加载该扩展：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> extension=redis.so &gt; /etc/php.d/redis.ini</span><br></pre></td></tr></table></figure></p>
+<p>完成之后检查一下redis扩展是否已经成功安装：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php -m | grep redis</span><br></pre></td></tr></table></figure></p>
+<p>如果输出“redis”，说明安装成功！</p>
+<h2 id="三、封装消息队列类">三、封装消息队列类</h2><p>为了使用方便，我将消息队列的操作简单地封装成一个类，关于phpredis的API可以参考它的项目主页：<a href="https://github.com/phpredis/phpredis" target="_blank" rel="external">https://github.com/phpredis/phpredis</a>。下面是代码：<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="comment">/**</span><br><span class="line"> * Redis 消息队列类</span><br><span class="line"> *<span class="phpdoc"> @author</span>  woniu &lt;wudihzh@qq.com&gt;</span><br><span class="line"> */</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MQ_redis</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">const</span> PREFIX = <span class="string">'WONIU_'</span>;</span><br><span class="line">    <span class="keyword">const</span> HOST = <span class="string">'127.0.0.1'</span>;</span><br><span class="line">    <span class="keyword">const</span> PORT = <span class="string">'6379'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span><br><span class="line">     * 初始化redis</span><br><span class="line">     *<span class="phpdoc"> @return</span> redis</span><br><span class="line">     */</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">redis_init</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">static</span> <span class="variable">$redis</span> = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (is_null(<span class="variable">$redis</span>)) &#123;</span><br><span class="line">            <span class="variable">$redis</span> = <span class="keyword">new</span> Redis();</span><br><span class="line">            <span class="variable">$redis</span>-&gt;connect(<span class="keyword">self</span>::HOST, <span class="keyword">self</span>::PORT, <span class="number">10</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$redis</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span><br><span class="line">     * 写入队列</span><br><span class="line">     *<span class="phpdoc"> @param</span> string $key</span><br><span class="line">     *<span class="phpdoc"> @param</span> mixed $value</span><br><span class="line">     *<span class="phpdoc"> @return</span> bool</span><br><span class="line">     */</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">input</span><span class="params">(<span class="variable">$key</span>, <span class="variable">$value</span>)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="variable">$redis</span> = <span class="keyword">self</span>::redis_init();</span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$redis</span>-&gt;lPush(<span class="keyword">self</span>::PREFIX . <span class="variable">$key</span>, serialize(<span class="variable">$value</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span><br><span class="line">     * 读取队列里的数据</span><br><span class="line">     *<span class="phpdoc"> @param</span> string $key</span><br><span class="line">     *<span class="phpdoc"> @param</span> int $max 最多读取max条数</span><br><span class="line">     *<span class="phpdoc"> @return</span> array</span><br><span class="line">     */</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">output</span><span class="params">(<span class="variable">$key</span>, <span class="variable">$max</span> = <span class="number">100</span>)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="variable">$out</span> = <span class="keyword">array</span>();</span><br><span class="line">        <span class="variable">$count</span> = <span class="number">0</span>;</span><br><span class="line">        <span class="variable">$redis</span> = <span class="keyword">self</span>::redis_init();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (<span class="variable">$value</span> = <span class="variable">$redis</span>-&gt;rPop(<span class="keyword">self</span>::PREFIX . <span class="variable">$key</span>)) &#123;</span><br><span class="line">            <span class="variable">$value</span> = unserialize(<span class="variable">$value</span>);</span><br><span class="line">            array_push(<span class="variable">$out</span>, <span class="variable">$value</span>);</span><br><span class="line">            <span class="keyword">if</span> (++ <span class="variable">$count</span> &gt;= <span class="variable">$max</span>) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="variable">$out</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>需要注意的是，当有多个消费者通过“output”方法从队列中获取数据时，返回的数组中某些元素可能是空的，但是从整体来看（所有消费者获取的数据合并起来），与插入队列中的数据是一致的，因此，通过output方法获取数据后，应当排除数组中的空元素后才执行后面的操作，以免引起一些莫名奇妙的错误。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://wudihzh.info/2015/05/16/PHP中使用Redis作消息队列/" data-id="ci9qqc9x70007m4mmlr0t2js3" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Redis/">Redis</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2015/05/05/如何编写一个安全的HTTP接口/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">如何编写一个安全的HTTP接口</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/总结/">总结</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术分享/">技术分享</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/转载/">转载</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSS/">CSS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeIgniter/">CodeIgniter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Memcached/">Memcached</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PHP/">PHP</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PySide/">PySide</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/">Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SSH/">SSH</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/博客/">博客</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/压力测试/">压力测试</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名/">域名</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/学习资料/">学习资料</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/安全/">安全</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/接口/">接口</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/教程/">教程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/正能量/">正能量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/空间/">空间</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/非阻塞/">非阻塞</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/CSS/" style="font-size: 10px;">CSS</a><a href="/tags/CodeIgniter/" style="font-size: 10px;">CodeIgniter</a><a href="/tags/Git/" style="font-size: 15px;">Git</a><a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a><a href="/tags/Linux/" style="font-size: 10px;">Linux</a><a href="/tags/Memcached/" style="font-size: 10px;">Memcached</a><a href="/tags/PHP/" style="font-size: 20px;">PHP</a><a href="/tags/PySide/" style="font-size: 10px;">PySide</a><a href="/tags/Python/" style="font-size: 10px;">Python</a><a href="/tags/Redis/" style="font-size: 10px;">Redis</a><a href="/tags/SSH/" style="font-size: 10px;">SSH</a><a href="/tags/socket/" style="font-size: 10px;">socket</a><a href="/tags/博客/" style="font-size: 10px;">博客</a><a href="/tags/压力测试/" style="font-size: 10px;">压力测试</a><a href="/tags/域名/" style="font-size: 10px;">域名</a><a href="/tags/学习资料/" style="font-size: 10px;">学习资料</a><a href="/tags/安全/" style="font-size: 10px;">安全</a><a href="/tags/接口/" style="font-size: 10px;">接口</a><a href="/tags/教程/" style="font-size: 15px;">教程</a><a href="/tags/正能量/" style="font-size: 10px;">正能量</a><a href="/tags/空间/" style="font-size: 10px;">空间</a><a href="/tags/非阻塞/" style="font-size: 10px;">非阻塞</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">三月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/07/">七月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">六月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/05/">五月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/03/">三月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/05/16/PHP中使用Redis作消息队列/">PHP中使用Redis作消息队列</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/05/如何编写一个安全的HTTP接口/">如何编写一个安全的HTTP接口</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/12/使用PHP对服务器进行压力测试/">使用PHP对服务器进行压力测试</a>
+          </li>
+        
+          <li>
+            <a href="/2015/03/02/一个“d”的差别，可怕的内存泄漏/">一个“d”的差别，可怕的内存泄漏</a>
+          </li>
+        
+          <li>
+            <a href="/2014/12/05/2-2在校验数组数据时空字符串处理的问题/">解决CodeIgniter 2.2在校验数组数据时空字符串处理的问题</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Huang Zhuohui<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="http://apps.bdimg.com/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>
