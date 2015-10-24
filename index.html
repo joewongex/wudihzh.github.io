@@ -64,6 +64,54 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-PHPExcel使用笔记" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/10/24/PHPExcel使用笔记/" class="article-date">
+  <time datetime="2015-10-24T07:54:08.000Z" itemprop="datePublished">2015-10-24</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/技术分享/">技术分享</a>►<a class="article-category-link" href="/categories/技术分享/总结/">总结</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/10/24/PHPExcel使用笔记/">PHPExcel使用笔记</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="读取Excel文件">读取Excel文件</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$fileType</span> = PHPExcel_IOFactory::identify(<span class="variable">$file</span>);</span><br><span class="line"><span class="variable">$reader</span> = PHPExcel_IOFactory::createReader(<span class="variable">$fileType</span>);</span><br><span class="line"><span class="comment">// 可选，只读取数据，不解析公式</span></span><br><span class="line"><span class="variable">$reader</span>-&gt;setReadDataOnly(<span class="keyword">TRUE</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="variable">$phpExcel</span> = <span class="variable">$reader</span>-&gt;load(<span class="variable">$file</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">catch</span> (PHPExcel_Reader_Exception <span class="variable">$e</span>) &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="浏览器下载Excel文件">浏览器下载Excel文件</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">false</span> !== strpos(<span class="variable">$_SERVER</span>[<span class="string">'HTTP_USER_AGENT'</span>], <span class="string">'MSIE'</span>)) &#123;</span><br><span class="line">    <span class="comment">// 如果是IE浏览器，需要对文件名进行编码，否则会乱码</span></span><br><span class="line">    <span class="variable">$filename</span> = urlencode(<span class="variable">$filename</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">header(<span class="string">'Content-type: application/vnd.ms-excel'</span>);</span><br><span class="line">header(<span class="string">'Content-Disposition: attachment;filename="'</span> . <span class="variable">$filename</span> . <span class="string">'"'</span>);</span><br><span class="line">header(<span class="string">'Cache-Control: max-age=0'</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable">$writer</span> = <span class="keyword">new</span> PHPExcel_Writer_Excel5(<span class="variable">$excel</span>);</span><br><span class="line"><span class="variable">$writer</span>-&gt;save(<span class="string">'php://output'</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="加粗和居中">加粗和居中</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sheet</span>-&gt;getStyle(<span class="string">'A1:A2'</span>)-&gt;applyFromArray(</span><br><span class="line">    <span class="keyword">array</span>(</span><br><span class="line">        <span class="string">'font'</span> =&gt; <span class="keyword">array</span> (</span><br><span class="line">            <span class="string">'bold'</span> =&gt; <span class="keyword">true</span></span><br><span class="line">        ),</span><br><span class="line">        <span class="string">'alignment'</span> =&gt; <span class="keyword">array</span>(</span><br><span class="line">            <span class="string">'horizontal'</span> =&gt; PHPExcel_Style_Alignment::HORIZONTAL_CENTER</span><br><span class="line">        )</span><br><span class="line">    )</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<h3 id="冻结行和列">冻结行和列</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 冻结第一行</span></span><br><span class="line"><span class="variable">$sheet</span>-&gt;freezePane(<span class="string">'A2'</span>);</span><br><span class="line"><span class="comment">// 冻结第一行和第一列</span></span><br><span class="line"><span class="variable">$sheet</span>-&gt;freezePane(<span class="string">'B2'</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="指定单元格格式为文本">指定单元格格式为文本</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A1单元格式显示文本形式的值“001”</span></span><br><span class="line"><span class="variable">$sheet</span>-&gt;setCellValueExplicitByColumnAndRow(<span class="number">0</span>, <span class="number">1</span>, <span class="string">'001'</span>, PHPExcel_Cell_DataType::TYPE_STRING);</span><br></pre></td></tr></table></figure>
+<h3 id="指定单元格式使用货币格式">指定单元格式使用货币格式</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 两位小数，逗号作千分位分隔符</span></span><br><span class="line"><span class="variable">$sheet</span>-&gt;getStyle(<span class="variable">$range</span>)-&gt;getNumberFormat()-&gt;setFormatCode(<span class="string">'###,###,###,##0.00'</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="合并单元格">合并单元格</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sheet</span>-&gt;mergeCells(<span class="string">'A1:B2'</span>);</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://wudihzh.info/2015/10/24/PHPExcel使用笔记/" data-id="cig4snifh00075cmm2ob8u9c2" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHPExcel/">PHPExcel</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-PHP中使用Redis作消息队列" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/05/16/PHP中使用Redis作消息队列/" class="article-date">
@@ -100,7 +148,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2015/05/16/PHP中使用Redis作消息队列/" data-id="ci9qqc9x70007m4mmlr0t2js3" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2015/05/16/PHP中使用Redis作消息队列/" data-id="cig4snigf000e5cmm9fuwxiig" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Redis/">Redis</a></li></ul>
@@ -148,7 +196,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2015/05/05/如何编写一个安全的HTTP接口/" data-id="ci9qqc9xh000em4mmud7l7gom" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2015/05/05/如何编写一个安全的HTTP接口/" data-id="cig4snih5000l5cmm91ppeq6v" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/安全/">安全</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/接口/">接口</a></li></ul>
@@ -203,7 +251,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2015/04/12/使用PHP对服务器进行压力测试/" data-id="ci9qqc9xo000mm4mmprvbxwej" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2015/04/12/使用PHP对服务器进行压力测试/" data-id="cig4snihc000t5cmmmjzub2vb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/socket/">socket</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/压力测试/">压力测试</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/非阻塞/">非阻塞</a></li></ul>
@@ -251,7 +299,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2015/03/02/一个“d”的差别，可怕的内存泄漏/" data-id="ci9qqc9yi001nm4mml8k2wa1s" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2015/03/02/一个“d”的差别，可怕的内存泄漏/" data-id="cig4sniic001u5cmmg3jvtmkv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Memcached/">Memcached</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -298,7 +346,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2014/12/05/2-2在校验数组数据时空字符串处理的问题/" data-id="ci9qqc9wv0000m4mmonnuewop" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2014/12/05/2-2在校验数组数据时空字符串处理的问题/" data-id="cig4sni9000005cmmryj34dg2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CodeIgniter/">CodeIgniter</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -363,7 +411,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2014/11/23/快乐地与内心交谈——摘自《正能量》/" data-id="ci9qqc9y00012m4mmftaqjf1i" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2014/11/23/快乐地与内心交谈——摘自《正能量》/" data-id="cig4snihn00195cmmga7pidi2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/正能量/">正能量</a></li></ul>
@@ -410,7 +458,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2014/07/12/精通CSS：入门基础/" data-id="ci9qqc9xu000vm4mm9dzwd1zg" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2014/07/12/精通CSS：入门基础/" data-id="cig4snihh00125cmmhlcb31az" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CSS/">CSS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/教程/">教程</a></li></ul>
@@ -463,7 +511,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2014/07/09/SSH开发学习资料总结/" data-id="ci9qqc9zi0021m4mmm5vha7wq" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2014/07/09/SSH开发学习资料总结/" data-id="cig4sniip00285cmmvyb16w1g" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SSH/">SSH</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/学习资料/">学习资料</a></li></ul>
@@ -511,58 +559,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2014/06/11/Windows下使用PySide开发GUI应用程序/" data-id="ci9qqc9yp001sm4mmhqufhxnv" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2014/06/11/Windows下使用PySide开发GUI应用程序/" data-id="cig4sniih001z5cmmb8wn18ye" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PySide/">PySide</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-史上最浅显易懂的Git教程！" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/05/17/史上最浅显易懂的Git教程！/" class="article-date">
-  <time datetime="2014-05-17T14:28:03.000Z" itemprop="datePublished">2014-05-17</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/转载/">转载</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/17/史上最浅显易懂的Git教程！/">史上最浅显易懂的Git教程！</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <blockquote>
-<p>为什么要编写这个教程？因为我在学习Git的过程中，买过书，也在网上Google了一堆Git相关的文章和教程，但令人失望的是，这些教程不是难得令人发指，就是简单得一笔带过，或者，只支离破碎地介绍Git的某几个命令，还有直接从Git手册粘贴帮助文档的，总之，初学者很难找到一个由浅入深，学完后能立刻上手的Git教程。</p>
-<p>既然号称史上最浅显易懂的Git教程，那这个教程有什么让你怦然心动的特点呢？</p>
-<p>首先，本教程绝对面向初学者，没有接触过版本控制概念的读者也可以轻松入门，不必担心起步难度；</p>
-<p>其次，本教程实用性超强，边学边练，一点也不觉得枯燥。而且，你所学的Git命令是“充分且必要”的，掌握了这些东西，你就可以通过Git轻松地完成你的工作。</p>
-</blockquote>
-<h3 id="@史上最浅显易懂的Git教程！"><a href="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000" target="_blank" rel="external">@史上最浅显易懂的Git教程！</a></h3>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2014/05/17/史上最浅显易懂的Git教程！/" data-id="ci9qqc9yd001im4mm0hge36kr" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/教程/">教程</a></li></ul>
 
     </footer>
   </div>
@@ -584,7 +584,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/总结/">总结</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术分享/">技术分享</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/转载/">转载</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/总结/">总结</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术分享/">技术分享</a><span class="category-list-count">10</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/技术分享/总结/">总结</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/转载/">转载</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -593,7 +593,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSS/">CSS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeIgniter/">CodeIgniter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Memcached/">Memcached</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PHP/">PHP</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PySide/">PySide</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/">Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SSH/">SSH</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/博客/">博客</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/压力测试/">压力测试</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名/">域名</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/学习资料/">学习资料</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/安全/">安全</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/接口/">接口</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/教程/">教程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/正能量/">正能量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/空间/">空间</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/非阻塞/">非阻塞</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSS/">CSS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeIgniter/">CodeIgniter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Memcached/">Memcached</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PHP/">PHP</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PHPExcel/">PHPExcel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PySide/">PySide</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/">Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SSH/">SSH</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/博客/">博客</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/压力测试/">压力测试</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名/">域名</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/学习资料/">学习资料</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/安全/">安全</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/接口/">接口</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/教程/">教程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/正能量/">正能量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/空间/">空间</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/非阻塞/">非阻塞</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -602,7 +602,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/CSS/" style="font-size: 10px;">CSS</a><a href="/tags/CodeIgniter/" style="font-size: 10px;">CodeIgniter</a><a href="/tags/Git/" style="font-size: 15px;">Git</a><a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a><a href="/tags/Linux/" style="font-size: 10px;">Linux</a><a href="/tags/Memcached/" style="font-size: 10px;">Memcached</a><a href="/tags/PHP/" style="font-size: 20px;">PHP</a><a href="/tags/PySide/" style="font-size: 10px;">PySide</a><a href="/tags/Python/" style="font-size: 10px;">Python</a><a href="/tags/Redis/" style="font-size: 10px;">Redis</a><a href="/tags/SSH/" style="font-size: 10px;">SSH</a><a href="/tags/socket/" style="font-size: 10px;">socket</a><a href="/tags/博客/" style="font-size: 10px;">博客</a><a href="/tags/压力测试/" style="font-size: 10px;">压力测试</a><a href="/tags/域名/" style="font-size: 10px;">域名</a><a href="/tags/学习资料/" style="font-size: 10px;">学习资料</a><a href="/tags/安全/" style="font-size: 10px;">安全</a><a href="/tags/接口/" style="font-size: 10px;">接口</a><a href="/tags/教程/" style="font-size: 15px;">教程</a><a href="/tags/正能量/" style="font-size: 10px;">正能量</a><a href="/tags/空间/" style="font-size: 10px;">空间</a><a href="/tags/非阻塞/" style="font-size: 10px;">非阻塞</a>
+      <a href="/tags/CSS/" style="font-size: 10px;">CSS</a><a href="/tags/CodeIgniter/" style="font-size: 10px;">CodeIgniter</a><a href="/tags/Git/" style="font-size: 15px;">Git</a><a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a><a href="/tags/Linux/" style="font-size: 10px;">Linux</a><a href="/tags/Memcached/" style="font-size: 10px;">Memcached</a><a href="/tags/PHP/" style="font-size: 20px;">PHP</a><a href="/tags/PHPExcel/" style="font-size: 10px;">PHPExcel</a><a href="/tags/PySide/" style="font-size: 10px;">PySide</a><a href="/tags/Python/" style="font-size: 10px;">Python</a><a href="/tags/Redis/" style="font-size: 10px;">Redis</a><a href="/tags/SSH/" style="font-size: 10px;">SSH</a><a href="/tags/socket/" style="font-size: 10px;">socket</a><a href="/tags/博客/" style="font-size: 10px;">博客</a><a href="/tags/压力测试/" style="font-size: 10px;">压力测试</a><a href="/tags/域名/" style="font-size: 10px;">域名</a><a href="/tags/学习资料/" style="font-size: 10px;">学习资料</a><a href="/tags/安全/" style="font-size: 10px;">安全</a><a href="/tags/接口/" style="font-size: 10px;">接口</a><a href="/tags/教程/" style="font-size: 15px;">教程</a><a href="/tags/正能量/" style="font-size: 10px;">正能量</a><a href="/tags/空间/" style="font-size: 10px;">空间</a><a href="/tags/非阻塞/" style="font-size: 10px;">非阻塞</a>
     </div>
   </div>
 
@@ -611,7 +611,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">三月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/07/">七月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">六月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/05/">五月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/03/">三月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">1</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">三月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/07/">七月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">六月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/05/">五月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/03/">三月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -621,6 +621,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2015/10/24/PHPExcel使用笔记/">PHPExcel使用笔记</a>
+          </li>
         
           <li>
             <a href="/2015/05/16/PHP中使用Redis作消息队列/">PHP中使用Redis作消息队列</a>
@@ -636,10 +640,6 @@
         
           <li>
             <a href="/2015/03/02/一个“d”的差别，可怕的内存泄漏/">一个“d”的差别，可怕的内存泄漏</a>
-          </li>
-        
-          <li>
-            <a href="/2014/12/05/2-2在校验数组数据时空字符串处理的问题/">解决CodeIgniter 2.2在校验数组数据时空字符串处理的问题</a>
           </li>
         
       </ul>

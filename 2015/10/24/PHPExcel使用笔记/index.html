@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   
-  <title>蜗牛</title>
+  <title>PHPExcel使用笔记 | 蜗牛</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="蜗牛的个人博客，分享IT技术、琐事">
-<meta property="og:type" content="website">
-<meta property="og:title" content="蜗牛">
-<meta property="og:url" content="http://wudihzh.info/tags/CodeIgniter/index.html">
+  <meta name="description" content="读取Excel文件1234567891011$fileType = PHPExcel_IOFactory::identify($file);$reader = PHPExcel_IOFactory::createReader($fileType);// 可选，只读取数据，不解析公式$reader-&amp;gt;setReadDataOnly(TRUE);try &amp;#123;    $phpExcel =">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHPExcel使用笔记">
+<meta property="og:url" content="http://wudihzh.info/2015/10/24/PHPExcel使用笔记/index.html">
 <meta property="og:site_name" content="蜗牛">
-<meta property="og:description" content="蜗牛的个人博客，分享IT技术、琐事">
+<meta property="og:description" content="读取Excel文件1234567891011$fileType = PHPExcel_IOFactory::identify($file);$reader = PHPExcel_IOFactory::createReader($fileType);// 可选，只读取数据，不解析公式$reader-&amp;gt;setReadDataOnly(TRUE);try &amp;#123;    $phpExcel =">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="蜗牛">
-<meta name="twitter:description" content="蜗牛的个人博客，分享IT技术、琐事">
+<meta name="twitter:title" content="PHPExcel使用笔记">
+<meta name="twitter:description" content="读取Excel文件1234567891011$fileType = PHPExcel_IOFactory::identify($file);$reader = PHPExcel_IOFactory::createReader($fileType);// 可选，只读取数据，不解析公式$reader-&amp;gt;setReadDataOnly(TRUE);try &amp;#123;    $phpExcel =">
   
     <link rel="alternative" href="/atom.xml" title="蜗牛" type="application/atom+xml">
   
@@ -62,39 +62,64 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2014" class="archive-year">2014</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2014/12/05/2-2在校验数组数据时空字符串处理的问题/" class="archive-article-date">
-  <time datetime="2014-12-05T12:56:37.000Z" itemprop="datePublished">12月 5</time>
+        <section id="main"><article id="post-PHPExcel使用笔记" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/10/24/PHPExcel使用笔记/" class="article-date">
+  <time datetime="2015-10-24T07:54:08.000Z" itemprop="datePublished">2015-10-24</time>
 </a>
-      
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/技术分享/">技术分享</a>►<a class="article-category-link" href="/categories/技术分享/总结/">总结</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2014/12/05/2-2在校验数组数据时空字符串处理的问题/">解决CodeIgniter 2.2在校验数组数据时空字符串处理的问题</a>
+    <h1 class="article-title" itemprop="name">
+      PHPExcel使用笔记
     </h1>
   
 
-    </header>
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="读取Excel文件">读取Excel文件</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$fileType</span> = PHPExcel_IOFactory::identify(<span class="variable">$file</span>);</span><br><span class="line"><span class="variable">$reader</span> = PHPExcel_IOFactory::createReader(<span class="variable">$fileType</span>);</span><br><span class="line"><span class="comment">// 可选，只读取数据，不解析公式</span></span><br><span class="line"><span class="variable">$reader</span>-&gt;setReadDataOnly(<span class="keyword">TRUE</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="variable">$phpExcel</span> = <span class="variable">$reader</span>-&gt;load(<span class="variable">$file</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">catch</span> (PHPExcel_Reader_Exception <span class="variable">$e</span>) &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="浏览器下载Excel文件">浏览器下载Excel文件</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">false</span> !== strpos(<span class="variable">$_SERVER</span>[<span class="string">'HTTP_USER_AGENT'</span>], <span class="string">'MSIE'</span>)) &#123;</span><br><span class="line">    <span class="comment">// 如果是IE浏览器，需要对文件名进行编码，否则会乱码</span></span><br><span class="line">    <span class="variable">$filename</span> = urlencode(<span class="variable">$filename</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">header(<span class="string">'Content-type: application/vnd.ms-excel'</span>);</span><br><span class="line">header(<span class="string">'Content-Disposition: attachment;filename="'</span> . <span class="variable">$filename</span> . <span class="string">'"'</span>);</span><br><span class="line">header(<span class="string">'Cache-Control: max-age=0'</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable">$writer</span> = <span class="keyword">new</span> PHPExcel_Writer_Excel5(<span class="variable">$excel</span>);</span><br><span class="line"><span class="variable">$writer</span>-&gt;save(<span class="string">'php://output'</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="加粗和居中">加粗和居中</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sheet</span>-&gt;getStyle(<span class="string">'A1:A2'</span>)-&gt;applyFromArray(</span><br><span class="line">    <span class="keyword">array</span>(</span><br><span class="line">        <span class="string">'font'</span> =&gt; <span class="keyword">array</span> (</span><br><span class="line">            <span class="string">'bold'</span> =&gt; <span class="keyword">true</span></span><br><span class="line">        ),</span><br><span class="line">        <span class="string">'alignment'</span> =&gt; <span class="keyword">array</span>(</span><br><span class="line">            <span class="string">'horizontal'</span> =&gt; PHPExcel_Style_Alignment::HORIZONTAL_CENTER</span><br><span class="line">        )</span><br><span class="line">    )</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<h3 id="冻结行和列">冻结行和列</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 冻结第一行</span></span><br><span class="line"><span class="variable">$sheet</span>-&gt;freezePane(<span class="string">'A2'</span>);</span><br><span class="line"><span class="comment">// 冻结第一行和第一列</span></span><br><span class="line"><span class="variable">$sheet</span>-&gt;freezePane(<span class="string">'B2'</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="指定单元格格式为文本">指定单元格格式为文本</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A1单元格式显示文本形式的值“001”</span></span><br><span class="line"><span class="variable">$sheet</span>-&gt;setCellValueExplicitByColumnAndRow(<span class="number">0</span>, <span class="number">1</span>, <span class="string">'001'</span>, PHPExcel_Cell_DataType::TYPE_STRING);</span><br></pre></td></tr></table></figure>
+<h3 id="指定单元格式使用货币格式">指定单元格式使用货币格式</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 两位小数，逗号作千分位分隔符</span></span><br><span class="line"><span class="variable">$sheet</span>-&gt;getStyle(<span class="variable">$range</span>)-&gt;getNumberFormat()-&gt;setFormatCode(<span class="string">'###,###,###,##0.00'</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="合并单元格">合并单元格</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sheet</span>-&gt;mergeCells(<span class="string">'A1:B2'</span>);</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://wudihzh.info/2015/10/24/PHPExcel使用笔记/" data-id="cig4snifh00075cmm2ob8u9c2" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHPExcel/">PHPExcel</a></li></ul>
+
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2015/05/16/PHP中使用Redis作消息队列/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">PHP中使用Redis作消息队列</div>
+    </a>
+  
+</nav>
+
+  
 </article>
-  
-  
-    </div></section>
-  
+
 </section>
         
           <aside id="sidebar">
