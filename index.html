@@ -91,16 +91,15 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h3 id="读取Excel文件">读取Excel文件</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$fileType</span> = PHPExcel_IOFactory::identify(<span class="variable">$file</span>);</span><br><span class="line"><span class="variable">$reader</span> = PHPExcel_IOFactory::createReader(<span class="variable">$fileType</span>);</span><br><span class="line"><span class="comment">// 可选，只读取数据，不解析公式</span></span><br><span class="line"><span class="variable">$reader</span>-&gt;setReadDataOnly(<span class="keyword">TRUE</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="variable">$phpExcel</span> = <span class="variable">$reader</span>-&gt;load(<span class="variable">$file</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">catch</span> (PHPExcel_Reader_Exception <span class="variable">$e</span>) &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="浏览器下载Excel文件">浏览器下载Excel文件</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">false</span> !== strpos(<span class="variable">$_SERVER</span>[<span class="string">'HTTP_USER_AGENT'</span>], <span class="string">'MSIE'</span>)) &#123;</span><br><span class="line">    <span class="comment">// 如果是IE浏览器，需要对文件名进行编码，否则会乱码</span></span><br><span class="line">    <span class="variable">$filename</span> = urlencode(<span class="variable">$filename</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">header(<span class="string">'Content-type: application/vnd.ms-excel'</span>);</span><br><span class="line">header(<span class="string">'Content-Disposition: attachment;filename="'</span> . <span class="variable">$filename</span> . <span class="string">'"'</span>);</span><br><span class="line">header(<span class="string">'Cache-Control: max-age=0'</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable">$writer</span> = <span class="keyword">new</span> PHPExcel_Writer_Excel5(<span class="variable">$excel</span>);</span><br><span class="line"><span class="variable">$writer</span>-&gt;save(<span class="string">'php://output'</span>);</span><br></pre></td></tr></table></figure>
-<h3 id="加粗和居中">加粗和居中</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sheet</span>-&gt;getStyle(<span class="string">'A1:A2'</span>)-&gt;applyFromArray(</span><br><span class="line">    <span class="keyword">array</span>(</span><br><span class="line">        <span class="string">'font'</span> =&gt; <span class="keyword">array</span> (</span><br><span class="line">            <span class="string">'bold'</span> =&gt; <span class="keyword">true</span></span><br><span class="line">        ),</span><br><span class="line">        <span class="string">'alignment'</span> =&gt; <span class="keyword">array</span>(</span><br><span class="line">            <span class="string">'horizontal'</span> =&gt; PHPExcel_Style_Alignment::HORIZONTAL_CENTER</span><br><span class="line">        )</span><br><span class="line">    )</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
-<h3 id="冻结行和列">冻结行和列</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 冻结第一行</span></span><br><span class="line"><span class="variable">$sheet</span>-&gt;freezePane(<span class="string">'A2'</span>);</span><br><span class="line"><span class="comment">// 冻结第一行和第一列</span></span><br><span class="line"><span class="variable">$sheet</span>-&gt;freezePane(<span class="string">'B2'</span>)</span><br></pre></td></tr></table></figure>
-<h3 id="指定单元格格式为文本">指定单元格格式为文本</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A1单元格式显示文本形式的值“001”</span></span><br><span class="line"><span class="variable">$sheet</span>-&gt;setCellValueExplicitByColumnAndRow(<span class="number">0</span>, <span class="number">1</span>, <span class="string">'001'</span>, PHPExcel_Cell_DataType::TYPE_STRING);</span><br></pre></td></tr></table></figure>
-<h3 id="指定单元格式使用货币格式">指定单元格式使用货币格式</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 两位小数，逗号作千分位分隔符</span></span><br><span class="line"><span class="variable">$sheet</span>-&gt;getStyle(<span class="variable">$range</span>)-&gt;getNumberFormat()-&gt;setFormatCode(<span class="string">'###,###,###,##0.00'</span>);</span><br></pre></td></tr></table></figure>
-<h3 id="合并单元格">合并单元格</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$sheet</span>-&gt;mergeCells(<span class="string">'A1:B2'</span>);</span><br></pre></td></tr></table></figure>
+        
+          <p class="article-more-link">
+            <a href="/2015/10/24/PHPExcel使用笔记/#more">Read More</a>
+          </p>
+        
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2015/10/24/PHPExcel使用笔记/" data-id="cig4snifh00075cmm2ob8u9c2" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2015/10/24/PHPExcel使用笔记/" data-id="cig4srj4l0007t8mmina7v600" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHPExcel/">PHPExcel</a></li></ul>
@@ -148,7 +147,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2015/05/16/PHP中使用Redis作消息队列/" data-id="cig4snigf000e5cmm9fuwxiig" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2015/05/16/PHP中使用Redis作消息队列/" data-id="cig4srj5d000et8mmck6xywtk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Redis/">Redis</a></li></ul>
@@ -196,7 +195,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2015/05/05/如何编写一个安全的HTTP接口/" data-id="cig4snih5000l5cmm91ppeq6v" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2015/05/05/如何编写一个安全的HTTP接口/" data-id="cig4srj5j000lt8mmihjh1s1y" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/安全/">安全</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/接口/">接口</a></li></ul>
@@ -251,7 +250,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2015/04/12/使用PHP对服务器进行压力测试/" data-id="cig4snihc000t5cmmmjzub2vb" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2015/04/12/使用PHP对服务器进行压力测试/" data-id="cig4srj5s000tt8mm99zvil72" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/socket/">socket</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/压力测试/">压力测试</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/非阻塞/">非阻塞</a></li></ul>
@@ -299,7 +298,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2015/03/02/一个“d”的差别，可怕的内存泄漏/" data-id="cig4sniic001u5cmmg3jvtmkv" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2015/03/02/一个“d”的差别，可怕的内存泄漏/" data-id="cig4srj6r001ut8mmw5rmsa3i" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Memcached/">Memcached</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -346,7 +345,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2014/12/05/2-2在校验数组数据时空字符串处理的问题/" data-id="cig4sni9000005cmmryj34dg2" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2014/12/05/2-2在校验数组数据时空字符串处理的问题/" data-id="cig4srj3a0000t8mmgax8fdiu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CodeIgniter/">CodeIgniter</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
@@ -411,7 +410,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2014/11/23/快乐地与内心交谈——摘自《正能量》/" data-id="cig4snihn00195cmmga7pidi2" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2014/11/23/快乐地与内心交谈——摘自《正能量》/" data-id="cig4srj610019t8mmhu3krt78" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/正能量/">正能量</a></li></ul>
@@ -458,7 +457,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2014/07/12/精通CSS：入门基础/" data-id="cig4snihh00125cmmhlcb31az" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2014/07/12/精通CSS：入门基础/" data-id="cig4srj5x0012t8mm2123fvnx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CSS/">CSS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/教程/">教程</a></li></ul>
@@ -511,7 +510,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2014/07/09/SSH开发学习资料总结/" data-id="cig4sniip00285cmmvyb16w1g" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2014/07/09/SSH开发学习资料总结/" data-id="cig4srj720028t8mme1aiqjil" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SSH/">SSH</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/学习资料/">学习资料</a></li></ul>
@@ -559,7 +558,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://wudihzh.info/2014/06/11/Windows下使用PySide开发GUI应用程序/" data-id="cig4sniih001z5cmmb8wn18ye" class="article-share-link">Share</a>
+      <a data-url="http://wudihzh.info/2014/06/11/Windows下使用PySide开发GUI应用程序/" data-id="cig4srj6t001zt8mmg02obcvh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PySide/">PySide</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/">Python</a></li></ul>
