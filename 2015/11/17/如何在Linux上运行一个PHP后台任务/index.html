@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>如何在Linux上运行一个PHP后台任务 | 蜗牛</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本文翻译整理自Daemonising a PHP cli script on a posix system
+
+I’ve been researching how to best write a long running PHP script executed on the command-line, and whilst there are Linux commands you can use t">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何在Linux上运行一个PHP后台任务">
+<meta property="og:url" content="http://wudihzh.info/2015/11/17/如何在Linux上运行一个PHP后台任务/index.html">
+<meta property="og:site_name" content="蜗牛">
+<meta property="og:description" content="本文翻译整理自Daemonising a PHP cli script on a posix system
+
+I’ve been researching how to best write a long running PHP script executed on the command-line, and whilst there are Linux commands you can use t">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何在Linux上运行一个PHP后台任务">
+<meta name="twitter:description" content="本文翻译整理自Daemonising a PHP cli script on a posix system
+
+I’ve been researching how to best write a long running PHP script executed on the command-line, and whilst there are Linux commands you can use t">
+  
+    <link rel="alternative" href="/atom.xml" title="蜗牛" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+   
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">蜗牛</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">我要一步一步往上爬，在最高点乘着叶片往前飞</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="q" value="site:http://wudihzh.info"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-如何在Linux上运行一个PHP后台任务" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/11/17/如何在Linux上运行一个PHP后台任务/" class="article-date">
+  <time datetime="2015-11-17T12:15:21.000Z" itemprop="datePublished">2015-11-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/技术分享/">技术分享</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      如何在Linux上运行一个PHP后台任务
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本文翻译整理自<a href="https://andytson.com/blog/2010/05/daemonising-a-php-cli-script-on-a-posix-system/" target="_blank" rel="external">Daemonising a PHP cli script on a posix system</a></p>
+<blockquote>
+<p>I’ve been researching how to best write a long running PHP script executed on the command-line, and whilst there are Linux commands you can use to daemonise a command, these can also be written into a php script as well.</p>
+</blockquote>
+<p>我花了很长时间去研究怎么编写一个可以一直运行的PHP命令行程序。在Linux系统上，你可以使用命令使一个程序转到后台去运行，不过，通过单纯的PHP代码，你也可以实现这样的需求。</p>
+<a id="more"></a>
+<blockquote>
+<p>The easiest way to daemonise a command on a posix system is to run:</p>
+</blockquote>
+<p>在Linux上，将一个程序转到后台运行最简单的方法是：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup <span class="built_in">command</span> &lt; /dev/null &gt; /dev/null <span class="number">2</span>&gt;&amp;<span class="number">1</span> &amp;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>This simply calls nohup to execute the command, which in effect disables the SIGHUP signal (used to tell a child its parent terminal is closing), and backgrounds the process. All standard file descriptors are set to /dev/null to stop the command from reading/outputting anything back to the terminal, and so that when the terminal is closed, reads and writes from stdin/stdout/stderr do not fail.</p>
+</blockquote>
+<p>使用nohup命令去执行程序，实际上是屏蔽了SIGHUP信号（这个信号用来告诉一个终端的进程，这个终端就要被关闭了），然后将程序转到后台去执行。所有标准文件描述符被重定向到 /dev/null 中，使程序不会向终端读写数据，因此即使终端被关闭了，程序都不会因为从 stdin/stdout/stderr 中读写数据而出错。</p>
+<blockquote>
+<p>This is a bit clunky, but the same can be achieved in PHP either by default, or via a command-line argument.</p>
+</blockquote>
+<p>这种方法看起来有点笨重，但是它对PHP程序也起作用，或者你也可以自己编写代码实现。</p>
+<h2 id="转到后台去">转到后台去</h2><blockquote>
+<p>First, to achieve backgrounding, you must fork the process as the current process wont be able to background. Forking will create a new process with the same memory as the parent, which will carry on on the same line the parent forked on. Then detatch it from the terminal using posix_setsid().</p>
+</blockquote>
+<p>要将一个程序转到后台去运行，首先你需要从当前进程中Fork出一个子进程来，这是因为当前正在运行的进程是不能被转到后台去的。然后你需要调用posix_setsid()函数将子进程从当前会话中剥离出来。子进程和父进程共享相同的内存空间，并且从Fork代码所在的位置继续执行下去。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 父进程Fork子进程，父子进程都从这里继续往下执行</span></span><br><span class="line"><span class="keyword">switch</span> (pcntl_fork()) &#123;</span><br><span class="line">    <span class="keyword">case</span> -<span class="number">1</span>:</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">'unable to fork'</span>);</span><br><span class="line">    <span class="comment">// 在子进程中，pcntl_fork函数返回0    </span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">0</span>: </span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="comment">// 父进程退出</span></span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">exit</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 到这里，父进程已经退出，由子进程执行</span></span><br><span class="line"><span class="comment">// Make the current process a session leader</span></span><br><span class="line"><span class="keyword">if</span> (posix_setsid() === -<span class="number">1</span>) &#123;</span><br><span class="line">     <span class="keyword">die</span>(<span class="string">'could not setsid'</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Next, we will replace the duplicated file descriptors (stdin, stdout and stderr) with /dev/null. When a standard file descriptor is closed, it can be replaced with one opened by php. The variables are not important, just the ordering of the fopen calls.</p>
+</blockquote>
+<p>接下来，我们将 stdin/stdout/stderr 这些标准文件描述符重定向到 /dev/null中。在PHP中，当一个文件描述符被关闭后，它可以被另一个打开的文件描述符所替代，至于新的文件描述符用什么变量来表示并不重要。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">fclose(STDIN);</span><br><span class="line">fclose(STDOUT);</span><br><span class="line">fclose(STDERR);</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 重定向STDIN</span></span><br><span class="line"><span class="variable">$stdIn</span> = fopen(<span class="string">'/dev/null'</span>, <span class="string">'r'</span>); </span><br><span class="line"><span class="comment">// 重定向STDOUT</span></span><br><span class="line"><span class="variable">$stdOut</span> = fopen(<span class="string">'/dev/null'</span>, <span class="string">'w'</span>); </span><br><span class="line"><span class="comment">// a hack to duplicate fd/1 to 2</span></span><br><span class="line"><span class="variable">$stdErr</span> = fopen(<span class="string">'php://stdout'</span>, <span class="string">'w'</span>);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>You may want to switch stderr to a log file instead e.g. fopen(‘/path/to/errorlog’, ‘a’). PHP errors will output to this file as they happen.</p>
+</blockquote>
+<p>如果你想将错误信息记录到日志中，最后一行可以改写成<figure class="highlight"><figcaption><span>'a')```。当PHP程序运行出现错误时，错误信息会自动记录到日志文件中。</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#10;&#62; Lastly SIGHUP, along with a few additional terminal signals, can be ignored by the process:&#10;&#10;&#26368;&#21518;&#65292;&#20687;SIGHUP&#31561;&#20854;&#20182;&#19968;&#20123;&#32456;&#31471;&#20449;&#21495;&#65292;&#37117;&#21487;&#20197;&#34987;&#36827;&#31243;&#24573;&#30053;&#25481;&#65306;&#10;&#10;```php&#10;pcntl_signal(SIGTSTP, SIG_IGN);&#10;pcntl_signal(SIGTTOU, SIG_IGN);&#10;pcntl_signal(SIGTTIN, SIG_IGN);&#10;pcntl_signal(SIGHUP, SIG_IGN);</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>So that gives us the basic daemonising effect. The terminal can now be closed, and the process will continue to run until terminated either internally or externally.</p>
+</blockquote>
+<p>现在我们已经基本上实现了将PHP程序转到后台运行的目标了。你可以关掉终端，程序会一直运行，直到它执行结束，或者被外部终止。</p>
+<h1 id="单个实例">单个实例</h1><blockquote>
+<p>Now with most daemon programs you want to make sure that there can be only one instance, and that instance can be tracked for termination later. To do this we can use a locked file that contains the process id. If the file is locked for write, the daemon is running, otherwise it isn’t. Also the file can be read by other scripts to get the process id, which can be used to send signals to the process.</p>
+</blockquote>
+<p>对于大部分后台任务，我们都希望只有一个实例在运行，而且我们可以跟踪实例的状态，并在适当的时候结束它。通过使用一个保存有实例进程ID的文件，我们可以实现这个要求。如果这个文件被加上了写锁，则对应的后台任务正在运行，否则它已停止。这个文件的内容可以被其它程序读取，根据文件所保存的进程ID向这个进程发送消息。</p>
+<blockquote>
+<p>This you would do before any other code.</p>
+</blockquote>
+<p>下面的代码应该被放在程序开头。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$lock</span> = fopen(<span class="string">'/path/to/pid'</span>, <span class="string">'c+'</span>);</span><br><span class="line"><span class="keyword">if</span> (!flock(<span class="variable">$lock</span>, LOCK_EX | LOCK_NB)) &#123;</span><br><span class="line">    <span class="keyword">die</span>(<span class="string">'already running'</span>);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">switch</span> (<span class="variable">$pid</span> = pcntl_fork()) &#123;</span><br><span class="line">    <span class="keyword">case</span> -<span class="number">1</span>:</span><br><span class="line">        <span class="keyword">die</span>(<span class="string">'unable to fork'</span>);</span><br><span class="line">    <span class="comment">// 子进程</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">0</span>: </span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="comment">// 父进程</span></span><br><span class="line">    <span class="keyword">default</span>: </span><br><span class="line">        <span class="comment">// 将文件指针移动到文件开头处，可选</span></span><br><span class="line">        fseek(<span class="variable">$lock</span>, <span class="number">0</span>);</span><br><span class="line">        ftruncate(<span class="variable">$lock</span>, <span class="number">0</span>);</span><br><span class="line">    	fwrite(<span class="variable">$lock</span>, <span class="variable">$pid</span>);</span><br><span class="line">        fflush(<span class="variable">$lock</span>);</span><br><span class="line">        <span class="keyword">exit</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>The lock will prevent another script from continuing. Once the script terminates, the lock will automatically be released allowing the script to be called again.</p>
+</blockquote>
+<p>文件锁定会阻止相同的代码被同时执行。一旦程序执行结束，文件锁会被自动释放，使得代码可以被再次执行。</p>
+<p>——- <em>补充</em><br>关于fopen函数中的“c+”模式，手册解释如下：</p>
+<blockquote>
+<p>Open the file for reading and writing; otherwise it has the same behavior as ‘c’.</p>
+</blockquote>
+<p>以读写模式打开文件，其它的和模式“c”一样，再来看看模式“c”的解释：</p>
+<blockquote>
+<p>Open the file for writing only. If the file does not exist, it is created. If it exists, it is neither truncated (as opposed to ‘w’), nor the call to this function fails (as is the case with ‘x’). The file pointer is positioned on the beginning of the file. This may be useful if it’s desired to get an advisory lock (see flock()) before attempting to modify the file, as using ‘w’ could truncate the file before the lock was obtained (if truncation is desired, ftruncate() can be used after the lock is requested).</p>
+</blockquote>
+<p>以只写方式打开文件。如果文件不存在，则自动创建。如果文件存在，它不会像“w”模式那样清空文件，也不会像“x”模式那样报错。文件指针会自动被定位到文件开头处（所以上面代码中<figure class="highlight"><figcaption><span>0);```并不是必要的）。这种模式对于尝试在修改文件前锁定文件非常有用，因为它不像“w”模式那样会在锁定文件前清空文件内容（如果想清空文件内容，可以在获得文件锁之后调用ftruncate函数）。</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#10;# &#23436;&#25972;&#30340;&#20195;&#30721;&#10;&#10;```php&#10;$lock = fopen(&#39;/path/to/pid&#39;, &#39;c+&#39;);&#10;if (!flock($lock, LOCK_EX | LOCK_NB)) &#123;&#10;    die(&#39;already running&#39;);&#10;&#125;&#10; &#10;switch ($pid = pcntl_fork()) &#123;&#10;    case -1:&#10;        die(&#39;unable to fork&#39;);&#10;    case 0: // this is the child process&#10;        break;&#10;    default: // otherwise this is the parent process&#10;        fseek($lock, 0);&#10;        ftruncate($lock, 0);&#10;    &#9;fwrite($lock, $pid);&#10;        fflush($lock);&#10;        exit;&#10;&#125;&#10; &#10;if (posix_setsid() === -1) &#123;&#10;     die(&#39;could not setsid&#39;);&#10;&#125;&#10; &#10;fclose(STDIN);&#10;fclose(STDOUT);&#10;fclose(STDERR);&#10; &#10;$stdIn = fopen(&#39;/dev/null&#39;, &#39;r&#39;); // set fd/0&#10;$stdOut = fopen(&#39;/dev/null&#39;, &#39;w&#39;); // set fd/1&#10;$stdErr = fopen(&#39;php://stdout&#39;, &#39;w&#39;); // a hack to duplicate fd/1 to 2&#10; &#10;pcntl_signal(SIGTSTP, SIG_IGN);&#10;pcntl_signal(SIGTTOU, SIG_IGN);&#10;pcntl_signal(SIGTTIN, SIG_IGN);&#10;pcntl_signal(SIGHUP, SIG_IGN);&#10; &#10;// do some long running work&#10;sleep(300);</span><br></pre></td></tr></table></figure></p>
+<p>——- <em>补充</em><br>你可能想将上面的代码封装成一个方法或函数，在程序开始运行时调用。但是实践证明，这样子虽然可以将程序转到后台去运行，却无法阻止同样的代码被同时执行（原因暂时不明）。但是你可以将上面的代码单独写到一个PHP文件中，然后在程序开头将其包含进来。</p>
+<blockquote>
+<p>To see the replaced file descriptors have a look at the process’ proc entry.</p>
+</blockquote>
+<p>在进程的proc项中，可以看到被替换的文件描述符。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">ls -al /proc/`cat /path/to/pid`/fd</span><br><span class="line"> </span><br><span class="line">total <span class="number">0</span></span><br><span class="line">dr-x------ <span class="number">2</span> root root  <span class="number">0</span> May <span class="number">23</span> <span class="number">09</span>:<span class="number">41</span> .</span><br><span class="line">dr-xr-xr-x <span class="number">5</span> root root  <span class="number">0</span> May <span class="number">23</span> <span class="number">09</span>:<span class="number">34</span> ..</span><br><span class="line">lr-x------ <span class="number">1</span> root root <span class="number">64</span> May <span class="number">23</span> <span class="number">09</span>:<span class="number">41</span> <span class="number">0</span> -&gt; /dev/null</span><br><span class="line">l-wx------ <span class="number">1</span> root root <span class="number">64</span> May <span class="number">23</span> <span class="number">09</span>:<span class="number">41</span> <span class="number">1</span> -&gt; /dev/null</span><br><span class="line">l-wx------ <span class="number">1</span> root root <span class="number">64</span> May <span class="number">23</span> <span class="number">09</span>:<span class="number">41</span> <span class="number">2</span> -&gt; /dev/null</span><br><span class="line">lrwx------ <span class="number">1</span> root root <span class="number">64</span> May <span class="number">23</span> <span class="number">09</span>:<span class="number">41</span> <span class="number">3</span> -&gt; /path/to/pid</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Here is a script that will then kill this daemon:</p>
+</blockquote>
+<p>终止后台任务运行的代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$lock</span> = fopen(<span class="string">'/path/to/pid'</span>, <span class="string">'c+'</span>);</span><br><span class="line"><span class="keyword">if</span> (flock(<span class="variable">$lock</span>, LOCK_EX | LOCK_NB)) &#123;</span><br><span class="line">	<span class="keyword">die</span>(<span class="string">'process not running'</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$pid</span> = fgets(<span class="variable">$lock</span>);</span><br><span class="line"> </span><br><span class="line">posix_kill(<span class="variable">$pid</span>, SIGTERM);</span><br></pre></td></tr></table></figure>
+<h1 id="在Windows系统上怎样实现呢？">在Windows系统上怎样实现呢？</h1><blockquote>
+<p>None of the versions of Windows support the posix api, however Microsoft have provided a service architecture in all versions of Windows since XP. There is a PECL module win32service, which can help you with dealing with setting up and controlling a PHP service. An example can be seen in the PHP.net documentation.</p>
+</blockquote>
+<p>虽然原作者在这里介绍了Windows的替代方案，并且提供了一个官方的<a href="http://docs.php.net/manual/en/win32service.examples-service.php" target="_blank" rel="external">实例</a>，但是该实例已经被删除了。我们一般不会在Windows上运行PHP的后台任务，所以也不建议在Windows系统上做上面的尝试。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://wudihzh.info/2015/11/17/如何在Linux上运行一个PHP后台任务/" data-id="cih3chdwr00076kmmtrrtnc8y" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2015/10/24/PHPExcel使用笔记/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">PHPExcel使用笔记</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/总结/">总结</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术分享/">技术分享</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/转载/">转载</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/随笔/">随笔</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSS/">CSS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeIgniter/">CodeIgniter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/">Git</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Memcached/">Memcached</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PHP/">PHP</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PHPExcel/">PHPExcel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PySide/">PySide</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/">Python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/">Redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SSH/">SSH</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/博客/">博客</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/压力测试/">压力测试</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/域名/">域名</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/学习资料/">学习资料</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/安全/">安全</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/接口/">接口</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/教程/">教程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/正能量/">正能量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/空间/">空间</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/非阻塞/">非阻塞</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/CSS/" style="font-size: 10px;">CSS</a><a href="/tags/CodeIgniter/" style="font-size: 10px;">CodeIgniter</a><a href="/tags/Git/" style="font-size: 15px;">Git</a><a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a><a href="/tags/Linux/" style="font-size: 15px;">Linux</a><a href="/tags/Memcached/" style="font-size: 10px;">Memcached</a><a href="/tags/PHP/" style="font-size: 20px;">PHP</a><a href="/tags/PHPExcel/" style="font-size: 10px;">PHPExcel</a><a href="/tags/PySide/" style="font-size: 10px;">PySide</a><a href="/tags/Python/" style="font-size: 10px;">Python</a><a href="/tags/Redis/" style="font-size: 10px;">Redis</a><a href="/tags/SSH/" style="font-size: 10px;">SSH</a><a href="/tags/socket/" style="font-size: 10px;">socket</a><a href="/tags/博客/" style="font-size: 10px;">博客</a><a href="/tags/压力测试/" style="font-size: 10px;">压力测试</a><a href="/tags/域名/" style="font-size: 10px;">域名</a><a href="/tags/学习资料/" style="font-size: 10px;">学习资料</a><a href="/tags/安全/" style="font-size: 10px;">安全</a><a href="/tags/接口/" style="font-size: 10px;">接口</a><a href="/tags/教程/" style="font-size: 15px;">教程</a><a href="/tags/正能量/" style="font-size: 10px;">正能量</a><a href="/tags/空间/" style="font-size: 10px;">空间</a><a href="/tags/非阻塞/" style="font-size: 10px;">非阻塞</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">三月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/07/">七月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/06/">六月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/05/">五月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/03/">三月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/11/17/如何在Linux上运行一个PHP后台任务/">如何在Linux上运行一个PHP后台任务</a>
+          </li>
+        
+          <li>
+            <a href="/2015/10/24/PHPExcel使用笔记/">PHPExcel使用笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/16/PHP中使用Redis作消息队列/">PHP中使用Redis作消息队列</a>
+          </li>
+        
+          <li>
+            <a href="/2015/05/05/如何编写一个安全的HTTP接口/">如何编写一个安全的HTTP接口</a>
+          </li>
+        
+          <li>
+            <a href="/2015/04/12/使用PHP对服务器进行压力测试/">使用PHP对服务器进行压力测试</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2015 Huang Zhuohui<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="http://apps.bdimg.com/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>
